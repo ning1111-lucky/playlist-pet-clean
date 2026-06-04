@@ -4,6 +4,10 @@ import { useApp } from "../AppContext";
 import { MusicProvider } from "../types";
 import { getLastFmTodayMusicData } from "../mockData";
 import homeBg from "../assets/pixel/backgrounds/home-bg.png";
+import pinkCatSprite from "../assets/pixel/home/pink-cat.svg";
+import blueCatSprite from "../assets/pixel/home/blue-cat.svg";
+import musicEggSprite from "../assets/pixel/home/music-egg.svg";
+import catAvatarSprite from "../assets/pixel/home/cat-avatar.svg";
 import {
   PixelBadge,
   PixelButton,
@@ -11,7 +15,6 @@ import {
   PixelIconType,
   RetroWindow,
 } from "../components/UI";
-import { UI_ASSETS } from "../uiAssets";
 
 type OnboardingStep = "home" | "source" | "passport";
 
@@ -55,7 +58,11 @@ async function readApiJsonResponse(response: Response): Promise<Record<string, u
 function PixelGameboy() {
   return (
     <div className="pixel-prop-gameboy" aria-hidden="true">
-      <img src={UI_ASSETS.gameboy} alt="" className="pixel-art-image" />
+      <div className="pixel-prop-screen" />
+      <div className="pixel-prop-controls">
+        <span className="pixel-dpad" />
+        <span className="pixel-button-cluster" />
+      </div>
     </div>
   );
 }
@@ -100,7 +107,18 @@ function PixelDecorationLayer() {
       <span className="home-prop home-prop-spark-b">
         <PixelIcon type="spark" size={18} />
       </span>
-
+      <span className="home-confetti home-confetti-pink home-confetti-1" />
+      <span className="home-confetti home-confetti-yellow home-confetti-2" />
+      <span className="home-confetti home-confetti-blue home-confetti-3" />
+      <span className="home-confetti home-confetti-green home-confetti-4" />
+      <span className="home-confetti home-confetti-pink home-confetti-5" />
+      <span className="home-confetti home-confetti-yellow home-confetti-6" />
+      <span className="home-confetti home-confetti-blue home-confetti-7" />
+      <span className="home-confetti home-confetti-green home-confetti-8" />
+      <span className="home-confetti home-confetti-pink home-confetti-9" />
+      <span className="home-confetti home-confetti-yellow home-confetti-10" />
+      <span className="home-confetti home-confetti-blue home-confetti-11" />
+      <span className="home-confetti home-confetti-green home-confetti-12" />
     </div>
   );
 }
@@ -110,7 +128,7 @@ function HomeStatusBar() {
     <div className="pixel-status-bar home-status-bar">
       <div className="status-cluster">
         <div className="status-avatar">
-          <img src={UI_ASSETS.catAvatar} alt="" className="status-avatar-image pixel-art-image" />
+          <img src={catAvatarSprite} alt="" className="status-avatar-image" />
         </div>
         <div className="status-level-stack">
           <div className="status-level-label">LV.01</div>
@@ -140,7 +158,7 @@ function PixelPinkCat() {
   return (
     <div className="stage-pet stage-pet-pink" aria-hidden="true">
       <div className="stage-pet-sprite">
-        <img src={UI_ASSETS.pinkCatPet} alt="" className="stage-pet-image pixel-art-image" />
+        <img src={pinkCatSprite} alt="" className="stage-pet-image" />
       </div>
       <div className="stage-pet-bubble">
         <PixelIcon type="heart" size={12} />
@@ -153,7 +171,7 @@ function PixelBlueCat() {
   return (
     <div className="stage-pet stage-pet-blue" aria-hidden="true">
       <div className="stage-pet-sprite">
-        <img src={UI_ASSETS.blueCatPet} alt="" className="stage-pet-image pixel-art-image" />
+        <img src={blueCatSprite} alt="" className="stage-pet-image" />
       </div>
       <div className="stage-pet-headphone">
         <PixelIcon type="headphone" size={18} />
@@ -169,7 +187,7 @@ function PixelPetEgg() {
   return (
     <div className="stage-egg" aria-hidden="true">
       <div className="stage-egg-shell">
-        <img src={UI_ASSETS.musicEgg} alt="" className="stage-egg-image pixel-art-image" />
+        <img src={musicEggSprite} alt="" className="stage-egg-image" />
       </div>
     </div>
   );

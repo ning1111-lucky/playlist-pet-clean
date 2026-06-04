@@ -7,14 +7,8 @@ import { generateId } from "../utils";
 import { motion } from "motion/react";
 import { baseShapeMap, resolveAssetImage } from "../assetMap";
 import { getDayDate } from "../AppContext";
-import { UI_ASSETS } from "../uiAssets";
 
 const GENERATED_WEEKLY_PET_IMAGE_KEY = "generatedWeeklyPetImage";
-const questDayBadgeMap: Record<number, string> = {
-  1: UI_ASSETS.day1Badge,
-  2: UI_ASSETS.day2Badge,
-  3: UI_ASSETS.day3Badge,
-};
 
 export function normalizeGenre(genre: string): string {
   const map: Record<string, string> = {
@@ -760,14 +754,7 @@ export const TodayView: React.FC<{ navigateTo: (tab: "today" | "items" | "map") 
             return (
               <div key={day} className={`quest-day-step is-${state}`}>
                 <div className="quest-day-dot">
-                  <img
-                    src={questDayBadgeMap[day]}
-                    alt=""
-                    className={`quest-day-badge pixel-art-image ${state === "locked" ? "is-locked" : ""}`}
-                  />
-                  <span className="quest-day-icon-overlay">
-                    {state === "done" ? <PixelIcon type="check" size={18} /> : state === "locked" ? <PixelIcon type="lock" size={18} /> : day}
-                  </span>
+                  {state === "done" ? <PixelIcon type="check" size={18} /> : state === "locked" ? <PixelIcon type="lock" size={18} /> : day}
                 </div>
                 <div className="quest-day-text">Day {day}</div>
                 <div className="quest-day-meta">{summary?.songCount || 0} songs</div>
