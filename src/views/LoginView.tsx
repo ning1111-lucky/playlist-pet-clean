@@ -3,10 +3,6 @@ import { motion } from "motion/react";
 import { useApp } from "../AppContext";
 import { MusicProvider } from "../types";
 import { getLastFmTodayMusicData } from "../mockData";
-import pinkCatSprite from "../assets/pixel/home/pink-cat.svg";
-import blueCatSprite from "../assets/pixel/home/blue-cat.svg";
-import musicEggSprite from "../assets/pixel/home/music-egg.svg";
-import catAvatarSprite from "../assets/pixel/home/cat-avatar.svg";
 import {
   PixelBadge,
   PixelButton,
@@ -16,6 +12,30 @@ import {
 } from "../components/UI";
 
 type OnboardingStep = "home" | "source" | "passport";
+
+const HOME_ASSETS = {
+  background: "/bg-main.png",
+  title: "/title.png",
+  catAvatar: "/cat-avatar.png",
+  pinkPet: "/pet-pink.png",
+  bluePet: "/pet-blue.png",
+  musicEgg: "/music-egg.png",
+  diamond: "/diamond.png",
+  plus: "/plus-button.png",
+  menu: "/menu.png",
+  startButton: "/button-start.png",
+  homeIcon: "/home-icon.png",
+  backpackIcon: "/backpack-icon.png",
+  mapIcon: "/map-icon.png",
+  headphone: "/headphone-icon.png",
+  cassette: "/cassette.png",
+  gameboy: "/gameboy.png",
+  heart: "/heart.png",
+  star: "/star.png",
+  musicNote: "/music-note.png",
+  sparklesLeft: "/sparkles-left.png",
+  sparklesRight: "/sparkles-right.png",
+} as const;
 
 const LASTFM_PROVIDER = {
   value: "lastfm" as MusicProvider,
@@ -59,7 +79,7 @@ function HomeStatusBar() {
     <div className="pixel-status-bar home-status-bar">
       <div className="status-cluster">
         <div className="status-avatar">
-          <img src={catAvatarSprite} alt="" className="status-avatar-image" />
+          <img src={HOME_ASSETS.catAvatar} alt="" className="status-avatar-image" />
         </div>
         <div className="status-level-stack">
           <div className="status-level-label">LV.01</div>
@@ -71,16 +91,34 @@ function HomeStatusBar() {
 
       <div className="status-actions">
         <div className="status-gem-chip">
-          <PixelIcon type="gem" size={18} />
+          <img src={HOME_ASSETS.diamond} alt="" className="status-gem-image" />
           <span>120</span>
         </div>
         <button type="button" className="status-action-button" aria-label="新增">
-          <PixelIcon type="plus" size={16} />
+          <img src={HOME_ASSETS.plus} alt="" className="status-action-image" />
         </button>
         <button type="button" className="status-action-button status-menu-button" aria-label="選單">
-          <PixelIcon type="menu" size={16} />
+          <img src={HOME_ASSETS.menu} alt="" className="status-action-image" />
         </button>
       </div>
+    </div>
+  );
+}
+
+function HomeDecorationLayer() {
+  return (
+    <div className="home-decoration-layer" aria-hidden="true">
+      <img src={HOME_ASSETS.gameboy} alt="" className="home-decoration home-decoration-gameboy" />
+      <img src={HOME_ASSETS.headphone} alt="" className="home-decoration home-decoration-headphone" />
+      <img src={HOME_ASSETS.cassette} alt="" className="home-decoration home-decoration-cassette" />
+      <img src={HOME_ASSETS.musicNote} alt="" className="home-decoration home-decoration-note-left" />
+      <img src={HOME_ASSETS.musicNote} alt="" className="home-decoration home-decoration-note-right" />
+      <img src={HOME_ASSETS.heart} alt="" className="home-decoration home-decoration-heart-left" />
+      <img src={HOME_ASSETS.heart} alt="" className="home-decoration home-decoration-heart-right" />
+      <img src={HOME_ASSETS.star} alt="" className="home-decoration home-decoration-star-left" />
+      <img src={HOME_ASSETS.star} alt="" className="home-decoration home-decoration-star-right" />
+      <img src={HOME_ASSETS.sparklesLeft} alt="" className="home-decoration home-decoration-sparkles-left" />
+      <img src={HOME_ASSETS.sparklesRight} alt="" className="home-decoration home-decoration-sparkles-right" />
     </div>
   );
 }
@@ -88,12 +126,7 @@ function HomeStatusBar() {
 function PixelPinkCat() {
   return (
     <div className="stage-pet stage-pet-pink" aria-hidden="true">
-      <div className="stage-pet-sprite">
-        <img src={pinkCatSprite} alt="" className="stage-pet-image" />
-      </div>
-      <div className="stage-pet-bubble">
-        <PixelIcon type="heart" size={12} />
-      </div>
+      <img src={HOME_ASSETS.pinkPet} alt="" className="stage-pet-image" />
     </div>
   );
 }
@@ -101,15 +134,7 @@ function PixelPinkCat() {
 function PixelBlueCat() {
   return (
     <div className="stage-pet stage-pet-blue" aria-hidden="true">
-      <div className="stage-pet-sprite">
-        <img src={blueCatSprite} alt="" className="stage-pet-image" />
-      </div>
-      <div className="stage-pet-headphone">
-        <PixelIcon type="headphone" size={18} />
-      </div>
-      <div className="stage-pet-bubble">
-        <PixelIcon type="heart" size={12} />
-      </div>
+      <img src={HOME_ASSETS.bluePet} alt="" className="stage-pet-image" />
     </div>
   );
 }
@@ -117,9 +142,7 @@ function PixelBlueCat() {
 function PixelPetEgg() {
   return (
     <div className="stage-egg" aria-hidden="true">
-      <div className="stage-egg-shell">
-        <img src={musicEggSprite} alt="" className="stage-egg-image" />
-      </div>
+      <img src={HOME_ASSETS.musicEgg} alt="" className="stage-egg-image" />
     </div>
   );
 }
@@ -127,14 +150,12 @@ function PixelPetEgg() {
 function HomeScreen({ onStart }: { onStart: () => void }) {
   return (
     <div className="page-stack home-screen">
-      <section className="home-start-scene" style={{ backgroundImage: "url(/bg-main.png)" }}>
+      <section className="home-start-scene" style={{ backgroundImage: `url(${HOME_ASSETS.background})` }}>
+        <HomeDecorationLayer />
         <HomeStatusBar />
 
         <section className="home-logo-area">
-          <div className="home-logo-stack">
-            <div className="home-logo-title home-logo-title-playlist">PLAYLIST</div>
-            <div className="home-logo-title home-logo-title-pet">PET</div>
-          </div>
+          <img src={HOME_ASSETS.title} alt="PLAYLIST PET" className="home-logo-image" />
           <p className="home-logo-subtitle">把你的聽歌紀錄孵化成音樂寵物</p>
         </section>
 
@@ -144,27 +165,28 @@ function HomeScreen({ onStart }: { onStart: () => void }) {
           <PixelBlueCat />
         </section>
 
-        <RetroWindow
-          title="開始音樂旅程"
-          tone="pink"
-          className="home-start-window"
-          bodyClassName="window-stack-tight text-center home-start-window-body"
-        >
-          <div className="home-start-copy-wrap">
+        <section className="home-start-window" aria-label="開始音樂旅程">
+          <div className="home-start-window-bar">
+            <span className="home-start-window-title">開始音樂旅程</span>
+            <span className="home-start-window-controls" aria-hidden="true">
+              <span />
+              <span />
+              <span />
+            </span>
+          </div>
+          <div className="home-start-window-body">
             <div className="home-start-copy-row">
-              <span className="home-start-copy-icon" aria-hidden="true">
-                <PixelIcon type="music-note" size={18} />
-              </span>
+              <img src={HOME_ASSETS.musicNote} alt="" className="home-start-copy-icon-image" />
               <p className="window-copy home-start-copy">
                 連結你的音樂帳號，讓 <strong>Playlist Pet</strong> 開始認識你的音樂宇宙！
               </p>
             </div>
             <div className="home-start-copy-divider" aria-hidden="true" />
+            <button type="button" className="home-start-button" onClick={onStart} aria-label="開始音樂旅程">
+              <img src={HOME_ASSETS.startButton} alt="" className="home-start-button-image" />
+            </button>
           </div>
-          <button type="button" className="home-start-button" onClick={onStart} aria-label="開始音樂旅程">
-            <img src="/assets/ui/start-button.png" alt="" className="home-start-button-image" />
-          </button>
-        </RetroWindow>
+        </section>
       </section>
     </div>
   );

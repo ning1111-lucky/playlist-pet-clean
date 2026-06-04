@@ -9,7 +9,6 @@ import { TodayView } from "./views/TodayView";
 import { CollectionView } from "./views/CollectionView";
 import { MapView } from "./views/MapView";
 import { ErrorBoundary } from "./components/ErrorBoundary";
-import { PixelIcon } from "./components/UI";
 
 const ACTIVE_TAB_STORAGE_KEY = "melody_active_tab";
 const VALID_TABS = ["today", "items", "map"] as const;
@@ -36,11 +35,16 @@ const getInitialActiveTab = (): ActiveTab => {
 };
 
 const BottomNavIcon = ({ type, active }: { type: string; active: boolean }) => {
+  const iconSrc =
+    type === "today"
+      ? "/home-icon.png"
+      : type === "items"
+        ? "/backpack-icon.png"
+        : "/map-icon.png";
+
   return (
     <div className="modern-tab-icon">
-      {type === "today" && <PixelIcon type="home" size={20} />}
-      {type === "items" && <PixelIcon type="backpack" size={20} />}
-      {type === "map" && <PixelIcon type="map" size={20} />}
+      <img src={iconSrc} alt="" className={`modern-tab-icon-image ${active ? "modern-tab-icon-image-active" : ""}`} />
     </div>
   );
 };
