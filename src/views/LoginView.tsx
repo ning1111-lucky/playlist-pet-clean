@@ -106,21 +106,7 @@ function HomeStatusBar() {
 }
 
 function HomeDecorationLayer() {
-  return (
-    <div className="home-decoration-layer" aria-hidden="true">
-      <img src={HOME_ASSETS.gameboy} alt="" className="home-decoration home-decoration-gameboy" />
-      <img src={HOME_ASSETS.headphone} alt="" className="home-decoration home-decoration-headphone" />
-      <img src={HOME_ASSETS.cassette} alt="" className="home-decoration home-decoration-cassette" />
-      <img src={HOME_ASSETS.musicNote} alt="" className="home-decoration home-decoration-note-left" />
-      <img src={HOME_ASSETS.musicNote} alt="" className="home-decoration home-decoration-note-right" />
-      <img src={HOME_ASSETS.heart} alt="" className="home-decoration home-decoration-heart-left" />
-      <img src={HOME_ASSETS.heart} alt="" className="home-decoration home-decoration-heart-right" />
-      <img src={HOME_ASSETS.star} alt="" className="home-decoration home-decoration-star-left" />
-      <img src={HOME_ASSETS.star} alt="" className="home-decoration home-decoration-star-right" />
-      <img src={HOME_ASSETS.sparklesLeft} alt="" className="home-decoration home-decoration-sparkles-left" />
-      <img src={HOME_ASSETS.sparklesRight} alt="" className="home-decoration home-decoration-sparkles-right" />
-    </div>
-  );
+  return <div className="home-decoration-layer" aria-hidden="true" />;
 }
 
 function PixelPinkCat() {

@@ -59,7 +59,7 @@ const AppContent: React.FC = () => {
 
   return (
     <div className="webapp-outer">
-      <div className="webapp-shell">
+      <div className={`webapp-shell ${!userProfile ? "login-home-shell" : ""}`}>
         <main className="webapp-content">
           {!userProfile ? (
             <LoginView />
