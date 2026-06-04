@@ -2032,10 +2032,10 @@ html, body, #root {
 
 .home-stage {
   position: absolute;
-  top: 230px;
+  top: 200px;
   left: 0;
   right: 0;
-  height: 220px;
+  height: 300px;
   z-index: 12;
   pointer-events: none;
 }
@@ -2048,26 +2048,26 @@ html, body, #root {
 }
 
 .stage-egg {
-  top: 0;
+  top: 20px;
   left: 50%;
-  width: 145px;
+  width: 210px;
   height: auto;
   transform: translateX(-50%);
   z-index: 2;
 }
 
 .stage-pet-pink {
-  left: 48px;
-  top: 95px;
-  width: 105px;
+  left: 32px;
+  top: 150px;
+  width: 155px;
   height: auto;
   z-index: 3;
 }
 
 .stage-pet-blue {
-  right: 48px;
-  top: 95px;
-  width: 105px;
+  right: 32px;
+  top: 150px;
+  width: 155px;
   height: auto;
   z-index: 3;
 }
@@ -2334,24 +2334,25 @@ html, body, #root {
   }
 
   .home-stage {
-    top: 230px;
-    height: 220px;
+    top: 200px;
+    height: 300px;
   }
 
   .stage-egg {
-    width: 145px;
+    top: 20px;
+    width: 210px;
   }
 
   .stage-pet-pink {
-    left: 48px;
-    top: 95px;
-    width: 105px;
+    left: 32px;
+    top: 150px;
+    width: 155px;
   }
 
   .stage-pet-blue {
-    right: 48px;
-    top: 95px;
-    width: 105px;
+    right: 32px;
+    top: 150px;
+    width: 155px;
   }
 
   .home-start-window {
