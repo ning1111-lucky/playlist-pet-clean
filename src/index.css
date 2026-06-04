@@ -1523,8 +1523,8 @@ html, body, #root {
 }
 
 .webapp-shell:has(.home-start-page) .mobile-bottom-nav {
-  height: 78px;
-  padding: 8px 12px;
+  height: 74px;
+  padding: 7px 12px;
   z-index: 30;
 }
 
@@ -1534,8 +1534,8 @@ html, body, #root {
 }
 
 .webapp-shell:has(.home-start-page) .modern-tab-icon-image {
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
 }
 
 .webapp-shell:has(.home-start-page) .pixel-nav-tab-label {
@@ -1864,6 +1864,12 @@ html, body, #root {
   background-repeat: no-repeat;
 }
 
+.home-start-page [src*="asset-sheet"],
+.home-start-page [alt*="ET SHEET"],
+.home-start-page [alt*="ASSET SHEET"] {
+  display: none !important;
+}
+
 .home-decoration-layer {
   position: absolute;
   inset: 0;
@@ -2024,7 +2030,7 @@ html, body, #root {
 .status-actions {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .status-gem-chip {
@@ -2042,15 +2048,15 @@ html, body, #root {
 }
 
 .status-gem-image {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   object-fit: contain;
   image-rendering: pixelated;
 }
 
 .status-action-button {
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   display: grid;
   place-items: center;
   border: 0;
@@ -2062,8 +2068,8 @@ html, body, #root {
 }
 
 .status-action-image {
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   object-fit: contain;
   image-rendering: pixelated;
 }
@@ -2103,10 +2109,10 @@ html, body, #root {
 
 .home-stage {
   position: absolute;
-  top: 220px;
+  top: 205px;
   left: 0;
   right: 0;
-  height: 165px;
+  height: 210px;
   z-index: 6;
 }
 
@@ -2118,12 +2124,12 @@ html, body, #root {
 
 .stage-pet {
   position: absolute;
-  top: 58px;
+  top: 92px;
 }
 
 .stage-egg {
   position: absolute;
-  top: 0;
+  top: 10px;
   left: 50%;
   transform: translateX(-50%);
 }
@@ -2145,20 +2151,20 @@ html, body, #root {
 }
 
 .stage-pet-image {
-  width: 72px;
+  width: 86px;
 }
 
 .stage-egg-image {
-  width: 118px;
+  width: 128px;
 }
 
 .home-start-window {
   position: absolute;
   left: 22px;
   right: 22px;
-  bottom: 112px;
-  z-index: 3;
-  height: 132px;
+  bottom: 118px;
+  z-index: 10;
+  height: 138px;
   border: 3px solid #111;
   border-radius: 18px;
   background: linear-gradient(180deg, #fffaf3 0%, #fff6ea 100%);
@@ -2200,15 +2206,18 @@ html, body, #root {
 .home-start-window-body {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 12px 16px 8px;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 10px 16px 6px;
+  height: calc(100% - 26px);
+  box-sizing: border-box;
 }
 
 .home-start-copy {
   margin: 0;
   font-weight: 800;
-  font-size: 13px;
-  line-height: 1.5;
+  font-size: 12px;
+  line-height: 1.45;
   text-align: left;
 }
 
@@ -2240,10 +2249,10 @@ html, body, #root {
 }
 
 .home-start-button-image {
-  width: 176px;
+  width: 170px;
   height: auto;
   display: block;
-  margin: 8px auto 0;
+  margin: 6px auto 0;
   image-rendering: pixelated;
   filter: drop-shadow(3px 4px 0 rgba(17, 17, 17, 0.22));
 }
@@ -2404,8 +2413,8 @@ html, body, #root {
   }
 
   .home-stage {
-    top: 220px;
-    height: 165px;
+    top: 205px;
+    height: 210px;
   }
 
   .stage-pet-pink {
@@ -2417,26 +2426,26 @@ html, body, #root {
   }
 
   .stage-pet {
-    top: 58px;
+    top: 92px;
   }
 
   .stage-pet-image {
-    width: 72px;
+    width: 86px;
   }
 
   .stage-egg-image {
-    width: 118px;
+    width: 128px;
   }
 
   .home-start-window {
     left: 22px;
     right: 22px;
-    bottom: 112px;
-    height: 132px;
+    bottom: 118px;
+    height: 138px;
   }
 
   .home-start-button-image {
-    width: 176px;
+    width: 170px;
   }
 
   .home-decoration-gameboy {
