@@ -150,7 +150,6 @@ function HomeScreen({ onStart }: { onStart: () => void }) {
           </div>
           <div className="home-start-window-body">
             <div className="home-start-copy-row">
-              <img src={HOME_ASSETS.musicNote} alt="" className="home-start-copy-icon-image" />
               <p className="window-copy home-start-copy">
                 連結你的音樂帳號，
                 <br />
