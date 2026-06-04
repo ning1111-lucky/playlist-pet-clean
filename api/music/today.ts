@@ -59,6 +59,28 @@ async function readJson<T>(response: Response): Promise<T> {
   return text.trim() ? (JSON.parse(text) as T) : ({} as T);
 }
 
+function parseLocalDateKey(value: string): Date | null {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) return null;
+
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const date = new Date(year, month - 1, day);
+
+  if (Number.isNaN(date.getTime())) return null;
+  if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) return null;
+  return date;
+}
+
+function parseRequestDate(value: string): Date | null {
+  const localDate = parseLocalDateKey(value);
+  if (localDate) return localDate;
+
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
 function getDayWindow(req: ApiRequest) {
   const url = getRequestUrl(req);
   const dayStartRaw = (url.searchParams.get("dayStart") || "").trim();
@@ -67,8 +89,8 @@ function getDayWindow(req: ApiRequest) {
   return {
     dayStartRaw,
     dayEndRaw,
-    dayStart: dayStartRaw ? new Date(dayStartRaw) : null,
-    dayEnd: dayEndRaw ? new Date(dayEndRaw) : null,
+    dayStart: dayStartRaw ? parseRequestDate(dayStartRaw) : null,
+    dayEnd: dayEndRaw ? parseRequestDate(dayEndRaw) : null,
     dayIndex,
   };
 }
@@ -117,10 +139,37 @@ function isNowPlayingWithinWindow(track: { "@attr"?: { nowplaying?: string } }, 
   return now >= dayStart.getTime() && now < dayEnd.getTime();
 }
 
+function isTimestampWithinWindow(timestampMs: number | null, dayStart: Date | null, dayEnd: Date | null) {
+  if (timestampMs === null || !dayStart || !dayEnd) return timestampMs !== null;
+  return timestampMs >= dayStart.getTime() && timestampMs < dayEnd.getTime();
+}
+
 function isWithinDayRange(playedAt: string | undefined, dayStart: Date | null, dayEnd: Date | null) {
-  if (!playedAt || !dayStart || !dayEnd) return true;
+  if (!playedAt) return false;
   const playedTime = new Date(playedAt).getTime();
-  return playedTime >= dayStart.getTime() && playedTime < dayEnd.getTime();
+  if (Number.isNaN(playedTime)) return false;
+  return isTimestampWithinWindow(playedTime, dayStart, dayEnd);
+}
+
+function getLastFmTrackTimestampMs(track: { date?: { uts?: string } }) {
+  const uts = track.date?.uts;
+  if (!uts) return null;
+
+  const timestamp = Number(uts) * 1000;
+  return Number.isFinite(timestamp) ? timestamp : null;
+}
+
+function isLastFmTrackWithinWindow(
+  track: { date?: { uts?: string }; "@attr"?: { nowplaying?: string } },
+  dayStart: Date | null,
+  dayEnd: Date | null
+) {
+  const timestampMs = getLastFmTrackTimestampMs(track);
+  if (timestampMs !== null) {
+    return isTimestampWithinWindow(timestampMs, dayStart, dayEnd);
+  }
+
+  return isNowPlayingWithinWindow(track, dayStart, dayEnd);
 }
 
 function getProvider(req: ApiRequest): MusicProvider {
@@ -311,12 +360,12 @@ async function getLastFmDailyMusicData(req: ApiRequest): Promise<DailyMusicPaylo
 
   const dayRangeTracks = dayRangeResponse?.recenttracks?.track || [];
   const recentTracks = recentResponse?.recenttracks?.track || [];
-  const sourceTracks = debugRecentOnly ? recentTracks : dayRangeTracks;
+  const dayRangeParsedTracks = dayRangeTracks.filter((track) => isLastFmTrackWithinWindow(track, dayStart, dayEnd));
+  const recentParsedTracks = recentTracks.filter((track) => isLastFmTrackWithinWindow(track, dayStart, dayEnd));
+  const usingRecentFallback = !debugRecentOnly && dayRangeParsedTracks.length === 0 && recentParsedTracks.length > 0;
+  const tracks = debugRecentOnly ? recentParsedTracks : usingRecentFallback ? recentParsedTracks : dayRangeParsedTracks;
+  const sourceTrackCount = debugRecentOnly ? recentTracks.length : usingRecentFallback ? recentTracks.length : dayRangeTracks.length;
 
-  const tracks = sourceTracks.filter((track) => {
-    if (track.date?.uts) return true;
-    return isNowPlayingWithinWindow(track, dayStart, dayEnd);
-  });
   const artistNames = Array.from(
     new Set(
       tracks
@@ -345,15 +394,19 @@ async function getLastFmDailyMusicData(req: ApiRequest): Promise<DailyMusicPaylo
   }));
 
   if (!debugRecentOnly) {
-    if (dayRangeTracks.length === 0 && recentTracks.length > 0) {
+    if (usingRecentFallback) {
+      filteredOutReason = "Last.fm day range 沒有命中可用歌曲，已改用 recent tracks 依本地日期窗口回補。";
+    } else if (dayRangeTracks.length === 0 && recentTracks.length > 0) {
       filteredOutReason = "Last.fm 最近有歌，但 current hatch day 的 from/to 範圍內沒有任何 scrobble。";
-    } else if (dayRangeTracks.length > 0 && normalizedTracks.length === 0) {
-      filteredOutReason = "Last.fm day range 有回傳 track，但都沒有可用的 date.uts；只有 nowplaying 或資料不完整。";
+    } else if (dayRangeTracks.length > 0 && dayRangeParsedTracks.length === 0) {
+      filteredOutReason = "Last.fm day range 有回傳 track，但都落在本地日期窗口外，或只有 nowplaying / 不完整資料。";
     } else if (dayRangeTracks.length === 0 && recentTracks.length === 0) {
       filteredOutReason = "Last.fm 最近 10 首與 day range 都沒有任何資料。";
     }
   } else if (recentTracks.length === 0) {
     filteredOutReason = "Last.fm 最近 10 首沒有回傳任何資料。";
+  } else if (recentParsedTracks.length === 0) {
+    filteredOutReason = "Last.fm 最近 10 首有回傳資料，但都不在本地日期窗口內。";
   }
 
   const data = buildDailyMusicData({
@@ -382,10 +435,10 @@ async function getLastFmDailyMusicData(req: ApiRequest): Promise<DailyMusicPaylo
     requestUrlWithoutApiKey: debugRecentOnly ? buildLastFmRequestUrl(recentParams) : buildLastFmRequestUrl(dayRangeParams),
     dayRangeRequestUrlWithoutApiKey: buildLastFmRequestUrl(dayRangeParams),
     recentRequestUrlWithoutApiKey: buildLastFmRequestUrl(recentParams),
-    rawTrackCount: sourceTracks.length,
+    rawTrackCount: sourceTrackCount,
     parsedTrackCount: normalizedTracks.length,
     dayRangeRawCount: dayRangeTracks.length,
-    dayRangeParsedCount: debugRecentOnly ? 0 : normalizedTracks.length,
+    dayRangeParsedCount: dayRangeParsedTracks.length,
     recentRawCount: recentTracks.length,
     rawFirstTracks: toLastFmTrackDebugItems(dayRangeTracks),
     recentFirstTracks: toLastFmTrackDebugItems(recentTracks),

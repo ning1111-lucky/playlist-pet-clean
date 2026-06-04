@@ -50,6 +50,19 @@ export function normalizeGenre(genre: string): string {
   return map[genre] || genre;
 }
 
+function toLocalDateKey(date: Date): string {
+  const year = date.getFullYear();
+  const month = `${date.getMonth() + 1}`.padStart(2, "0");
+  const day = `${date.getDate()}`.padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function addDaysToLocalDateKey(dateKey: string, offset: number): string {
+  const date = new Date(`${dateKey}T00:00:00`);
+  date.setDate(date.getDate() + offset);
+  return toLocalDateKey(date);
+}
+
 function getStoredGeneratedImage(): string | null {
   try {
     return localStorage.getItem(GENERATED_WEEKLY_PET_IMAGE_KEY);
@@ -190,7 +203,7 @@ export const TodayView: React.FC<{ navigateTo: (tab: "today" | "items" | "map") 
   const safeDay = Math.min(Math.max(Number(currentMockDay) || 1, 1), TOTAL_DAYS);
   const safeWeekItems = Array.isArray(currentWeekItems) ? currentWeekItems : [];
   const currentDayDate = useMemo(
-    () => (hatchSession?.startDate ? getDayDate(hatchSession.startDate, safeDay) : new Date().toISOString().slice(0, 10)),
+    () => (hatchSession?.startDate ? getDayDate(hatchSession.startDate, safeDay) : toLocalDateKey(new Date())),
     [hatchSession?.startDate, safeDay]
   );
   const showLastFmDebug = useMemo(() => {
@@ -214,9 +227,7 @@ export const TodayView: React.FC<{ navigateTo: (tab: "today" | "items" | "map") 
     [hatchSession]
   );
   const nextDayDate = useMemo(() => {
-    const date = new Date(`${currentDayDate}T00:00:00`);
-    date.setDate(date.getDate() + 1);
-    return date.toISOString().slice(0, 10);
+    return addDaysToLocalDateKey(currentDayDate, 1);
   }, [currentDayDate]);
   const daySlotConfigs = getDaySlotConfigs(safeDay);
   const activeMusicProvider = userProfile?.musicProvider || "mock";
