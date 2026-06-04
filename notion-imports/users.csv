@@ -1,0 +1,3 @@
+display_name,email,music_source,lastfm_username,spotify_connected,country,city,style_note,is_active
+Aning,aning@example.com,spotify,,true,Taiwan,Taipei,"soft pixel, cute collectible",true
+Demo Lastfm User,demo@example.com,lastfm,demo_listener,false,Taiwan,Kaohsiung,"camp indie, handmade accessories",true

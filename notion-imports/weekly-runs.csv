@@ -1,0 +1,3 @@
+session_name,user_name,music_source,lastfm_username,main_genre_key,secondary_genre_key,analysis_type,listen_count,day1_clothes_key,day1_shoes_key,day2_headwear_key,day2_handheld_key,day3_accessory_key,base_key,final_prompt,pet_image_url,status
+"Aning - Week 01",Aning,spotify,,Indie,Kpop,mixed,57,INDIE-clothes-A,KPOP-shoes,INDIE-headwear-A,KPOP-handheld,INDIE-accessory,base-2,"Redraw one final weekly music pet using the provided base character image as the strict body reference.",,draft
+"Demo Lastfm - Week 01","Demo Lastfm User",lastfm,demo_listener,Jazz,Pop,pure,34,JAZZ-clothes,POP-shoes,JAZZ-headwear,POP-handheld,JAZZ-accessory,base-1,"Redraw one final weekly music pet using the provided base character image as the strict body reference.",,draft
