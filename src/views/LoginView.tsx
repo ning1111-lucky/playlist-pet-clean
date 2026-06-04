@@ -3,7 +3,6 @@ import { motion } from "motion/react";
 import { useApp } from "../AppContext";
 import { MusicProvider } from "../types";
 import { getLastFmTodayMusicData } from "../mockData";
-import homeBg from "../assets/pixel/backgrounds/home-bg.png";
 import pinkCatSprite from "../assets/pixel/home/pink-cat.svg";
 import blueCatSprite from "../assets/pixel/home/blue-cat.svg";
 import musicEggSprite from "../assets/pixel/home/music-egg.svg";
@@ -53,74 +52,6 @@ async function readApiJsonResponse(response: Response): Promise<Record<string, u
   } catch {
     return { error: rawText.trim() || "同步失敗，請重試" };
   }
-}
-
-function PixelGameboy() {
-  return (
-    <div className="pixel-prop-gameboy" aria-hidden="true">
-      <div className="pixel-prop-screen" />
-      <div className="pixel-prop-controls">
-        <span className="pixel-dpad" />
-        <span className="pixel-button-cluster" />
-      </div>
-    </div>
-  );
-}
-
-function PixelDecorationLayer() {
-  return (
-    <div className="home-decoration-layer" aria-hidden="true">
-      <div className="home-prop home-prop-gameboy">
-        <PixelGameboy />
-      </div>
-      <div className="home-prop home-prop-headphone">
-        <PixelIcon type="headphone" size={54} />
-      </div>
-      <div className="home-prop home-prop-cassette">
-        <PixelIcon type="cassette" size={50} />
-      </div>
-
-      <span className="home-prop home-prop-note-a">
-        <PixelIcon type="music-note" size={18} />
-      </span>
-      <span className="home-prop home-prop-note-b">
-        <PixelIcon type="music-note" size={16} />
-      </span>
-      <span className="home-prop home-prop-note-c">
-        <PixelIcon type="music-note" size={14} />
-      </span>
-      <span className="home-prop home-prop-heart-a">
-        <PixelIcon type="heart" size={16} />
-      </span>
-      <span className="home-prop home-prop-heart-b">
-        <PixelIcon type="heart" size={14} />
-      </span>
-      <span className="home-prop home-prop-star-a">
-        <PixelIcon type="star" size={18} />
-      </span>
-      <span className="home-prop home-prop-star-b">
-        <PixelIcon type="star" size={14} />
-      </span>
-      <span className="home-prop home-prop-spark-a">
-        <PixelIcon type="spark" size={14} />
-      </span>
-      <span className="home-prop home-prop-spark-b">
-        <PixelIcon type="spark" size={18} />
-      </span>
-      <span className="home-confetti home-confetti-pink home-confetti-1" />
-      <span className="home-confetti home-confetti-yellow home-confetti-2" />
-      <span className="home-confetti home-confetti-blue home-confetti-3" />
-      <span className="home-confetti home-confetti-green home-confetti-4" />
-      <span className="home-confetti home-confetti-pink home-confetti-5" />
-      <span className="home-confetti home-confetti-yellow home-confetti-6" />
-      <span className="home-confetti home-confetti-blue home-confetti-7" />
-      <span className="home-confetti home-confetti-green home-confetti-8" />
-      <span className="home-confetti home-confetti-pink home-confetti-9" />
-      <span className="home-confetti home-confetti-yellow home-confetti-10" />
-      <span className="home-confetti home-confetti-blue home-confetti-11" />
-      <span className="home-confetti home-confetti-green home-confetti-12" />
-    </div>
-  );
 }
 
 function HomeStatusBar() {
@@ -196,8 +127,7 @@ function PixelPetEgg() {
 function HomeScreen({ onStart }: { onStart: () => void }) {
   return (
     <div className="page-stack home-screen">
-      <section className="home-start-scene" style={{ backgroundImage: `url(${homeBg})` }}>
-        <PixelDecorationLayer />
+      <section className="home-start-scene" style={{ backgroundImage: "url(/bg-main.png)" }}>
         <HomeStatusBar />
 
         <section className="home-logo-area">
@@ -206,15 +136,6 @@ function HomeScreen({ onStart }: { onStart: () => void }) {
             <div className="home-logo-title home-logo-title-pet">PET</div>
           </div>
           <p className="home-logo-subtitle">把你的聽歌紀錄孵化成音樂寵物</p>
-          <div className="home-slogan-bar">
-            <span className="home-slogan-icon">
-              <PixelIcon type="heart" size={14} />
-            </span>
-            <span>PRESS START TO HATCH!</span>
-            <span className="home-slogan-icon">
-              <PixelIcon type="music-note" size={14} />
-            </span>
-          </div>
         </section>
 
         <section className="home-stage">
@@ -229,14 +150,20 @@ function HomeScreen({ onStart }: { onStart: () => void }) {
           className="home-start-window"
           bodyClassName="window-stack-tight text-center home-start-window-body"
         >
-          <p className="window-copy home-start-copy">
-            連結你的音樂帳號，
-            <br />
-            讓 <strong>Playlist Pet</strong> 開始認識你的音樂宇宙！
-          </p>
-          <PixelButton variant="pink" className="w-full justify-center home-start-button" onClick={onStart}>
-            START
-          </PixelButton>
+          <div className="home-start-copy-wrap">
+            <div className="home-start-copy-row">
+              <span className="home-start-copy-icon" aria-hidden="true">
+                <PixelIcon type="music-note" size={18} />
+              </span>
+              <p className="window-copy home-start-copy">
+                連結你的音樂帳號，讓 <strong>Playlist Pet</strong> 開始認識你的音樂宇宙！
+              </p>
+            </div>
+            <div className="home-start-copy-divider" aria-hidden="true" />
+          </div>
+          <button type="button" className="home-start-button" onClick={onStart} aria-label="開始音樂旅程">
+            <img src="/assets/ui/start-button.png" alt="" className="home-start-button-image" />
+          </button>
         </RetroWindow>
       </section>
     </div>
