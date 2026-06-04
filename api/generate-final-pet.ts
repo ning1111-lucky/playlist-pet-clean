@@ -146,7 +146,7 @@ async function fetchImageAsBlob(req: ApiRequest, imageUrl: string, fieldName: st
 
   const response = await fetch(resolvedUrl);
   if (!response.ok) {
-    throw new Error(`Failed to fetch ${fieldName} image: ${resolvedUrl}`);
+    throw new Error(`Failed to load ${fieldName} image: ${resolvedUrl}`);
   }
 
   const arrayBuffer = await response.arrayBuffer();
@@ -212,7 +212,8 @@ async function callOpenAIImageEdit(options: {
   }
 
   if (!response.ok) {
-    throw new Error(extractOpenAIError(parsedBody, rawText.trim() || "OpenAI image generation failed."));
+    const errorText = extractOpenAIError(parsedBody, rawText.trim() || "OpenAI image generation failed.");
+    throw new Error(`OpenAI API error ${response.status}: ${errorText}`);
   }
 
   const firstImage = Array.isArray(parsedBody?.data) ? parsedBody?.data?.[0] : null;
@@ -242,7 +243,10 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
     return jsonResponse(res, 500, { ok: false, error: "Missing OPENAI_API_KEY" });
   }
 
+  let step = "start";
+
   try {
+    step = "read-request-body";
     const body = (isRecord(req.body) ? req.body : {}) as GenerateFinalPetRequestBody;
     const baseImageUrl = normalizeOptionalString(body.baseImageUrl);
     const itemImageUrls = (isRecord(body.itemImageUrls) ? body.itemImageUrls : {}) as ItemImageUrls;
@@ -270,21 +274,28 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
       subGenre: subGenre || undefined,
     });
 
+    step = "parse-base-image";
+    const baseImage = await fetchImageAsBlob(req, baseImageUrl, "base");
+    step = "parse-item-images";
+    const itemImages = await Promise.all(
+      orderedItemEntries
+        .filter(([, value]) => Boolean(value))
+        .map(([key, value]) => fetchImageAsBlob(req, value, key))
+    );
+
     const images = [
-      await fetchImageAsBlob(req, baseImageUrl, "base"),
-      ...(await Promise.all(
-        orderedItemEntries
-          .filter(([, value]) => Boolean(value))
-          .map(([key, value]) => fetchImageAsBlob(req, value, key))
-      )),
+      baseImage,
+      ...itemImages,
     ];
 
+    step = "call-openai";
     const imageUrl = await callOpenAIImageEdit({
       apiKey,
       model: DEFAULT_OPENAI_IMAGE_MODEL,
       images,
       prompt,
     });
+    step = "parse-openai-response";
 
     const successBody: GenerateFinalPetResponse = {
       ok: true,
@@ -295,9 +306,12 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
     return jsonResponse(res, 200, successBody);
   } catch (error) {
     const message = error instanceof Error && error.message ? error.message : "OpenAI image generation failed.";
-    const errorBody: GenerateFinalPetResponse = {
+    const errorBody: GenerateFinalPetResponse & { debug: { step: string } } = {
       ok: false,
       error: message,
+      debug: {
+        step,
+      },
     };
 
     return jsonResponse(res, 500, errorBody);

@@ -512,8 +512,13 @@ export const TodayView: React.FC<{ navigateTo: (tab: "today" | "items" | "map") 
       });
       const generateData = (await readApiJsonResponse(generateResponse)) as unknown as GenerateFinalPetResponse;
       if (!generateResponse.ok || generateData.ok !== true || typeof generateData.imageUrl !== "string" || !generateData.imageUrl) {
-        const message = generateData.ok === false && typeof generateData.error === "string" ? generateData.error : "生成失敗，請重試";
-        throw new Error(message);
+        const errorText = generateData.ok === false && typeof generateData.error === "string" ? generateData.error : "生成失敗，請重試";
+        const debugPayload =
+          generateData && typeof generateData === "object" && "debug" in generateData
+            ? (generateData as { debug?: unknown }).debug
+            : null;
+        const debugText = debugPayload ? `\n${JSON.stringify(debugPayload, null, 2)}` : "";
+        throw new Error(`${errorText}${debugText}`);
       }
 
       setGeneratedImageUrl(generateData.imageUrl);
