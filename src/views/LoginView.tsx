@@ -150,7 +150,7 @@ function PixelPetEgg() {
 function HomeScreen({ onStart }: { onStart: () => void }) {
   return (
     <div className="page-stack home-screen">
-      <section className="home-start-scene" style={{ backgroundImage: `url(${HOME_ASSETS.background})` }}>
+      <section className="home-start-scene home-start-page" style={{ backgroundImage: `url(${HOME_ASSETS.background})` }}>
         <HomeDecorationLayer />
         <HomeStatusBar />
 

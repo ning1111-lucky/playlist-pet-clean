@@ -1522,6 +1522,26 @@ html, body, #root {
   box-shadow: 3px 3px 0 #111;
 }
 
+.webapp-shell:has(.home-start-page) .mobile-bottom-nav {
+  height: 78px;
+  padding: 8px 12px;
+  z-index: 30;
+}
+
+.webapp-shell:has(.home-start-page) .modern-tab-icon {
+  width: 52px;
+  height: 52px;
+}
+
+.webapp-shell:has(.home-start-page) .modern-tab-icon-image {
+  width: 28px;
+  height: 28px;
+}
+
+.webapp-shell:has(.home-start-page) .pixel-nav-tab-label {
+  font-size: 12px;
+}
+
 .pixel-status-bar {
   background:
     linear-gradient(180deg, #0b356f 0%, #082957 100%);
@@ -1834,6 +1854,16 @@ html, body, #root {
   text-align: center;
 }
 
+.home-start-page {
+  position: relative;
+  width: 100%;
+  min-height: 760px;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center bottom;
+  background-repeat: no-repeat;
+}
+
 .home-decoration-layer {
   position: absolute;
   inset: 0;
@@ -1846,77 +1876,77 @@ html, body, #root {
   height: auto;
   object-fit: contain;
   image-rendering: pixelated;
-  opacity: 0.82;
+  opacity: 0.72;
 }
 
 .home-decoration-gameboy {
-  top: 116px;
-  left: 24px;
-  width: 46px;
+  top: 132px;
+  left: 18px;
+  width: 42px;
   transform: rotate(-14deg);
 }
 
 .home-decoration-headphone {
-  top: 102px;
-  right: 28px;
-  width: 52px;
+  top: 128px;
+  right: 22px;
+  width: 44px;
 }
 
 .home-decoration-cassette {
-  top: 285px;
-  right: 26px;
-  width: 54px;
+  top: 302px;
+  right: 18px;
+  width: 44px;
   transform: rotate(14deg);
 }
 
 .home-decoration-note-left {
-  top: 182px;
-  left: 26px;
-  width: 21px;
+  top: 210px;
+  left: 18px;
+  width: 18px;
   transform: rotate(-6deg);
 }
 
 .home-decoration-note-right {
-  top: 192px;
-  right: 80px;
-  width: 18px;
+  top: 218px;
+  right: 70px;
+  width: 16px;
   transform: rotate(8deg);
 }
 
 .home-decoration-heart-left {
-  top: 318px;
-  left: 95px;
-  width: 20px;
+  top: 356px;
+  left: 104px;
+  width: 16px;
 }
 
 .home-decoration-heart-right {
-  top: 316px;
+  top: 352px;
   right: 96px;
-  width: 20px;
+  width: 16px;
 }
 
 .home-decoration-star-left {
-  top: 152px;
-  left: 158px;
-  width: 22px;
+  top: 182px;
+  left: 144px;
+  width: 16px;
 }
 
 .home-decoration-star-right {
-  top: 364px;
-  right: 36px;
-  width: 22px;
+  top: 388px;
+  right: 34px;
+  width: 16px;
 }
 
 .home-decoration-sparkles-left {
-  top: 138px;
-  left: 112px;
-  width: 76px;
+  top: 184px;
+  left: 16px;
+  width: 54px;
 }
 
 .home-decoration-sparkles-right {
-  top: 138px;
-  right: 120px;
-  width: 68px;
+  top: 184px;
+  right: 16px;
+  width: 48px;
 }
 
 .home-status-bar {
@@ -1928,10 +1958,10 @@ html, body, #root {
 }
 
 .pixel-status-bar.home-status-bar {
-  min-height: 58px;
-  padding: 10px 10px 9px;
+  min-height: 48px;
+  padding: 8px 8px 7px;
   border: 3px solid #111;
-  border-radius: 18px;
+  border-radius: 16px;
   background: linear-gradient(180deg, #0f4eb5 0%, #0e3880 100%);
   box-shadow: 3px 3px 0 #111;
 }
@@ -1939,23 +1969,23 @@ html, body, #root {
 .status-cluster {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .status-avatar {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   display: grid;
   place-items: center;
   border: 3px solid #111;
-  border-radius: 10px;
+  border-radius: 9px;
   background: #fff9db;
   box-shadow: 3px 3px 0 #111;
 }
 
 .status-avatar-image {
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   object-fit: contain;
   image-rendering: pixelated;
 }
@@ -1963,20 +1993,20 @@ html, body, #root {
 .status-level-stack {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  min-width: 98px;
+  gap: 3px;
+  min-width: 88px;
 }
 
 .status-level-label {
   color: #fff;
   font-family: "Silkscreen", "Inter", system-ui, sans-serif;
-  font-size: 0.8rem;
+  font-size: 11px;
   letter-spacing: 0.04em;
 }
 
 .status-xp-track {
-  width: 92px;
-  height: 8px;
+  width: 82px;
+  height: 7px;
   border: 2px solid #111;
   border-radius: 999px;
   background: #f8f8f4;
@@ -1994,33 +2024,33 @@ html, body, #root {
 .status-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .status-gem-chip {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 5px 8px;
+  gap: 4px;
+  padding: 4px 6px;
   border: 2px solid #111;
-  border-radius: 10px;
+  border-radius: 9px;
   background: linear-gradient(180deg, #122d59 0%, #0d2243 100%);
   box-shadow: 2px 2px 0 #111;
   color: #fff;
   font-family: "Silkscreen", "Inter", system-ui, sans-serif;
-  font-size: 0.82rem;
+  font-size: 11px;
 }
 
 .status-gem-image {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   object-fit: contain;
   image-rendering: pixelated;
 }
 
 .status-action-button {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   display: grid;
   place-items: center;
   border: 0;
@@ -2032,18 +2062,18 @@ html, body, #root {
 }
 
 .status-action-image {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   object-fit: contain;
   image-rendering: pixelated;
 }
 
 .home-logo-area {
   position: absolute;
-  top: 105px;
+  top: 92px;
   left: 0;
   right: 0;
-  z-index: 2;
+  z-index: 8;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2057,49 +2087,53 @@ html, body, #root {
 }
 
 .home-logo-subtitle {
-  max-width: 21ch;
-  margin: 8px 0 0;
-  padding: 0 20px;
+  position: absolute;
+  top: 162px;
+  left: 20px;
+  right: 20px;
+  max-width: none;
+  margin: 0;
+  padding: 0;
   font-size: 13px;
   font-weight: 900;
   color: #fff;
-  line-height: 1.42;
-  text-shadow: 0 2px 0 rgba(17, 17, 17, 0.62);
+  line-height: 1.3;
+  text-shadow: 2px 2px 0 #174080;
 }
 
 .home-stage {
   position: absolute;
-  top: 210px;
+  top: 220px;
   left: 0;
   right: 0;
-  height: 190px;
-  z-index: 2;
+  height: 165px;
+  z-index: 6;
 }
 
 .stage-pet,
 .stage-egg {
   position: relative;
-  z-index: 2;
+  z-index: 6;
 }
 
 .stage-pet {
   position: absolute;
-  top: 72px;
+  top: 58px;
 }
 
 .stage-egg {
   position: absolute;
-  top: 20px;
+  top: 0;
   left: 50%;
   transform: translateX(-50%);
 }
 
 .stage-pet-pink {
-  left: 42px;
+  left: 48px;
 }
 
 .stage-pet-blue {
-  right: 42px;
+  right: 48px;
 }
 
 .stage-pet-image,
@@ -2111,7 +2145,7 @@ html, body, #root {
 }
 
 .stage-pet-image {
-  width: 76px;
+  width: 72px;
 }
 
 .stage-egg-image {
@@ -2120,11 +2154,11 @@ html, body, #root {
 
 .home-start-window {
   position: absolute;
-  left: 20px;
-  right: 20px;
-  bottom: 95px;
+  left: 22px;
+  right: 22px;
+  bottom: 112px;
   z-index: 3;
-  height: 145px;
+  height: 132px;
   border: 3px solid #111;
   border-radius: 18px;
   background: linear-gradient(180deg, #fffaf3 0%, #fff6ea 100%);
@@ -2135,7 +2169,7 @@ html, body, #root {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 28px;
+  min-height: 26px;
   padding: 4px 10px;
   border-bottom: 3px solid #111;
   background: linear-gradient(180deg, #ff5fb0 0%, #ff3f98 100%);
@@ -2144,7 +2178,7 @@ html, body, #root {
 
 .home-start-window-title {
   font-family: "Silkscreen", "Inter", system-ui, sans-serif;
-  font-size: 0.8rem;
+  font-size: 12px;
   color: #fff;
   letter-spacing: 0.04em;
 }
@@ -2167,7 +2201,7 @@ html, body, #root {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 14px 18px;
+  padding: 12px 16px 8px;
 }
 
 .home-start-copy {
@@ -2206,9 +2240,10 @@ html, body, #root {
 }
 
 .home-start-button-image {
-  width: min(100%, 190px);
+  width: 176px;
   height: auto;
   display: block;
+  margin: 8px auto 0;
   image-rendering: pixelated;
   filter: drop-shadow(3px 4px 0 rgba(17, 17, 17, 0.22));
 }
@@ -2343,63 +2378,65 @@ html, body, #root {
 
 @media (max-width: 480px) {
   .home-start-scene {
-    min-height: calc(100dvh - 104px);
-    padding-bottom: 100px;
+    min-height: 760px;
+    padding-bottom: 96px;
   }
 
   .home-status-bar {
-    top: 14px;
-    left: 14px;
-    right: 14px;
+    top: 16px;
+    left: 16px;
+    right: 16px;
   }
 
   .home-logo-area {
-    top: 105px;
+    top: 92px;
   }
 
   .home-logo-image {
-    width: min(62vw, 230px);
+    width: 220px;
   }
 
   .home-logo-subtitle {
-    max-width: 18ch;
+    top: 162px;
+    left: 20px;
+    right: 20px;
     font-size: 13px;
   }
 
   .home-stage {
-    top: 210px;
-    height: 190px;
+    top: 220px;
+    height: 165px;
   }
 
   .stage-pet-pink {
-    left: 32px;
+    left: 48px;
   }
 
   .stage-pet-blue {
-    right: 32px;
+    right: 48px;
   }
 
   .stage-pet {
-    top: 74px;
+    top: 58px;
   }
 
   .stage-pet-image {
-    width: 74px;
+    width: 72px;
   }
 
   .stage-egg-image {
-    width: 114px;
+    width: 118px;
   }
 
   .home-start-window {
-    left: 16px;
-    right: 16px;
-    bottom: 92px;
-    height: 138px;
+    left: 22px;
+    right: 22px;
+    bottom: 112px;
+    height: 132px;
   }
 
   .home-start-button-image {
-    width: min(100%, 186px);
+    width: 176px;
   }
 
   .home-decoration-gameboy {
