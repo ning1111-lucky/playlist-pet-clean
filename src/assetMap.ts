@@ -19,6 +19,20 @@ export function getRandomBaseKey(): BaseKey {
   return BASE_KEYS[Math.floor(Math.random() * BASE_KEYS.length)];
 }
 
+function normalizeAssetGenreKey(genre: string | null | undefined) {
+  return typeof genre === "string" ? genre.trim() : "";
+}
+
+export function getSafeAssetGenre(primary?: string | null, fallback?: string | null) {
+  const primaryGenre = normalizeAssetGenreKey(primary);
+  if (primaryGenre && primaryGenre !== "Hidden" && primaryGenre !== "Mixed") return primaryGenre;
+
+  const fallbackGenre = normalizeAssetGenreKey(fallback);
+  if (fallbackGenre && fallbackGenre !== "Hidden" && fallbackGenre !== "Mixed") return fallbackGenre;
+
+  return "Pop";
+}
+
 const variantAssetMap: Record<string, Partial<Record<string, string[]>>> = {
   Indie: {
     clothes: ["/INDIE-clothes-A.png", "/INDIE-clothes-B.png"],
@@ -54,7 +68,8 @@ function getSeededIndex(seed: string, length: number) {
 }
 
 export function resolveAssetImage(genre: string, part: string, seed?: string) {
-  const variants = variantAssetMap[genre]?.[part];
+  const safeGenre = getSafeAssetGenre(genre);
+  const variants = variantAssetMap[safeGenre]?.[part];
   if (variants && variants.length > 0) {
     if (!seed) {
       return variants[Math.floor(Math.random() * variants.length)];
@@ -62,11 +77,12 @@ export function resolveAssetImage(genre: string, part: string, seed?: string) {
     return variants[getSeededIndex(seed, variants.length)];
   }
 
-  return assetMap[genre]?.[part] || null;
+  return assetMap[safeGenre]?.[part] || null;
 }
 
 export function getAssetErrorFallback(genre: string, part: string, currentSrc: string | null | undefined, seed?: string) {
-  const variants = variantAssetMap[genre]?.[part] || [];
+  const safeGenre = getSafeAssetGenre(genre);
+  const variants = variantAssetMap[safeGenre]?.[part] || [];
   const preferred = resolveAssetImage(genre, part, seed);
 
   if (preferred && preferred !== currentSrc) {
@@ -84,12 +100,13 @@ export function getAssetErrorFallback(genre: string, part: string, currentSrc: s
 }
 
 export function normalizeStoredAssetImage(genre: string, part: string, imageSrc: string | null | undefined, seed?: string) {
-  const legacyPaths = legacyAssetPathMap[`${genre}:${part}`];
+  const safeGenre = getSafeAssetGenre(genre);
+  const legacyPaths = legacyAssetPathMap[`${safeGenre}:${part}`];
   if (legacyPaths && (!imageSrc || legacyPaths.includes(imageSrc))) {
-    return resolveAssetImage(genre, part, seed);
+    return resolveAssetImage(safeGenre, part, seed);
   }
 
-  return imageSrc || resolveAssetImage(genre, part, seed);
+  return imageSrc || resolveAssetImage(safeGenre, part, seed);
 }
 
 export const genreToBaseType: Record<string, string> = {

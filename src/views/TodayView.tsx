@@ -5,7 +5,7 @@ import { getBaseType, getCollectionSlotIndex, getDaySlotConfigs, getTodayMusicDa
 import { DailyMusicData, MusicItem, Genre, MapEntry, Pet, MusicFetchDebug, GenerateFinalPetResponse } from "../types";
 import { generateId } from "../utils";
 import { motion } from "motion/react";
-import { baseShapeMap, resolveAssetImage } from "../assetMap";
+import { baseShapeMap, getSafeAssetGenre, resolveAssetImage } from "../assetMap";
 import { getDayDate } from "../AppContext";
 
 const GENERATED_WEEKLY_PET_IMAGE_KEY = "generatedWeeklyPetImage";
@@ -231,8 +231,10 @@ export const TodayView: React.FC<{ navigateTo: (tab: "today" | "items" | "map") 
   const daySlotConfigs = getDaySlotConfigs(safeDay);
   const activeMusicProvider = "lastfm";
   const distribution = Array.isArray(mockMusic?.distribution) ? mockMusic.distribution : [];
-  const primarySuggestedGenre = normalizeGenre((mockMusic?.assetGenre || mockMusic?.mainGenre || "Pop") as string) as Genre;
-  const secondarySuggestedGenre = normalizeGenre((mockMusic?.subGenre || primarySuggestedGenre) as string) as Genre;
+  const rawPrimaryGenre = normalizeGenre((mockMusic?.assetGenre || mockMusic?.mainGenre || "Pop") as string) as Genre;
+  const rawSecondaryGenre = normalizeGenre((mockMusic?.subGenre || rawPrimaryGenre || "Pop") as string) as Genre;
+  const primarySuggestedGenre = getSafeAssetGenre(rawPrimaryGenre, rawSecondaryGenre) as Genre;
+  const secondarySuggestedGenre = getSafeAssetGenre(rawSecondaryGenre, primarySuggestedGenre) as Genre;
 
   const getCollectedItemByPart = (part: string) => {
     const index = getCollectionSlotIndex(part as MusicItem["part"]);
@@ -246,7 +248,7 @@ export const TodayView: React.FC<{ navigateTo: (tab: "today" | "items" | "map") 
       day: safeDay,
       part: slot.part,
       genre,
-      label: slot.title,
+      label: `${genre} ${slot.part}`,
       icon: "",
       imageSrc: resolveAssetImage(genre, slot.part, `${genre}-${slot.part}-${safeDay}`),
     } as MusicItem;

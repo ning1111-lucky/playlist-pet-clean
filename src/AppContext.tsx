@@ -21,7 +21,7 @@ import {
   TOTAL_DAYS,
 } from "./mockData";
 import { generateId } from "./utils";
-import { BaseKey, getRandomBaseKey, normalizeBaseKey, normalizeStoredAssetImage, resolveAssetImage } from "./assetMap";
+import { BaseKey, getRandomBaseKey, getSafeAssetGenre, normalizeBaseKey, normalizeStoredAssetImage, resolveAssetImage } from "./assetMap";
 
 type DayIndex = 1 | 2 | 3;
 
@@ -194,10 +194,12 @@ function normalizeMusicItem(value: unknown, fallbackDay: DayIndex, fallbackDate?
   if (!isRecord(value)) return null;
 
   const day = clampDayIndex(value.sourceDay ?? value.day ?? fallbackDay);
-  const genre = normalizeGenre(value.genre);
+  const rawGenre = normalizeGenre(value.genre);
+  const genre = getSafeAssetGenre(rawGenre) as Genre;
   const part = normalizePart(value.part);
   const id = typeof value.id === "string" && value.id ? value.id : generateId();
   const sourceDate = typeof value.sourceDate === "string" && value.sourceDate ? value.sourceDate : fallbackDate || "";
+  const rawLabel = typeof value.label === "string" ? value.label.trim() : "";
 
   return {
     id,
@@ -206,7 +208,7 @@ function normalizeMusicItem(value: unknown, fallbackDay: DayIndex, fallbackDate?
     sourceDate,
     part,
     genre,
-    label: typeof value.label === "string" && value.label ? value.label : `${genre} ${part}`,
+    label: rawLabel && !/^(Hidden|Mixed)\b/i.test(rawLabel) ? rawLabel : `${genre} ${part}`,
     icon: typeof value.icon === "string" ? value.icon : "",
     imageSrc: normalizeStoredAssetImage(
       genre,
@@ -278,7 +280,10 @@ function normalizeHatchSession(value: unknown): HatchSession {
   });
 
   session.sessionId = typeof value.sessionId === "string" && value.sessionId ? value.sessionId : session.sessionId;
-  session.currentDay = getCurrentDay(startDate);
+  session.currentDay =
+    value.currentDay !== undefined
+      ? clampDayIndex(value.currentDay)
+      : getCurrentDay(startDate);
   return session;
 }
 
@@ -603,15 +608,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const advanceDay = () => {
     setState((previous) => {
       const session = normalizeHatchSession(previous.hatchSession);
-      if (session.currentDay >= TOTAL_DAYS) return previous;
-      const nextStartDate = addDaysToDateKey(session.startDate, -1);
-      const nextSession = normalizeHatchSession({
-        ...session,
-        startDate: nextStartDate,
-      });
+      const currentDay = clampDayIndex(session.currentDay);
+
+      if (currentDay >= TOTAL_DAYS) return previous;
+
+      const nextDay = clampDayIndex(currentDay + 1);
+      session.currentDay = nextDay;
+
+      if (!session.days[nextDay]) {
+        session.days[nextDay] = createEmptyDay(getDayDate(session.startDate, nextDay));
+      }
+
       return hydrateState({
         ...previous,
-        hatchSession: nextSession,
+        hatchSession: session,
       });
     });
   };
@@ -659,10 +669,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       const mainGenre = normalizeGenre(payload.data.assetGenre || payload.data.mainGenre);
       const secondaryGenre = normalizeGenre(payload.data.subGenre || mainGenre);
+      const mainAssetGenre = getSafeAssetGenre(mainGenre, secondaryGenre) as Genre;
+      const secondaryAssetGenre = getSafeAssetGenre(secondaryGenre, mainGenre) as Genre;
       const items: MusicItem[] = [];
 
       getDaySlotConfigs(dayIndex).forEach((slot, slotIndex) => {
-        const itemGenre = slot.genreSource === "main" ? mainGenre : secondaryGenre;
+        const itemGenre = slot.genreSource === "main" ? mainAssetGenre : secondaryAssetGenre;
         items.push({
           id: `${dayIndex}-${slot.part}-${slotIndex}-${Math.random().toString(36).slice(2)}`,
           day: dayIndex,
