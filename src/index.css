@@ -2113,49 +2113,48 @@ html, body, #root {
   left: 0;
   right: 0;
   height: 210px;
-  z-index: 6;
+  z-index: 8;
+  pointer-events: none;
 }
 
 .stage-pet,
 .stage-egg {
-  position: relative;
-  z-index: 6;
-}
-
-.stage-pet {
   position: absolute;
-  top: 92px;
+  display: block;
+  opacity: 1;
 }
 
 .stage-egg {
-  position: absolute;
   top: 10px;
   left: 50%;
+  width: 128px;
+  height: auto;
   transform: translateX(-50%);
+  z-index: 2;
 }
 
 .stage-pet-pink {
   left: 48px;
+  top: 92px;
+  width: 86px;
+  height: auto;
+  z-index: 3;
 }
 
 .stage-pet-blue {
   right: 48px;
+  top: 92px;
+  width: 86px;
+  height: auto;
+  z-index: 3;
 }
 
-.stage-pet-image,
-.stage-egg-image {
+.stage-pet,
+.stage-egg {
   height: auto;
   object-fit: contain;
   image-rendering: pixelated;
   filter: drop-shadow(4px 4px 0 rgba(17, 17, 17, 0.28));
-}
-
-.stage-pet-image {
-  width: 86px;
-}
-
-.stage-egg-image {
-  width: 128px;
 }
 
 .home-start-window {
@@ -2238,9 +2237,12 @@ html, body, #root {
 }
 
 .home-start-button {
-  width: 100%;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 180px;
+  height: auto;
+  margin: 8px auto 0;
   padding: 0;
   border: 0;
   background: transparent;
@@ -2252,7 +2254,6 @@ html, body, #root {
   width: 170px;
   height: auto;
   display: block;
-  margin: 6px auto 0;
   image-rendering: pixelated;
   filter: drop-shadow(3px 4px 0 rgba(17, 17, 17, 0.22));
 }
@@ -2417,35 +2418,11 @@ html, body, #root {
     height: 210px;
   }
 
-  .stage-pet-pink {
-    left: 48px;
-  }
-
-  .stage-pet-blue {
-    right: 48px;
-  }
-
-  .stage-pet {
-    top: 92px;
-  }
-
-  .stage-pet-image {
-    width: 86px;
-  }
-
-  .stage-egg-image {
-    width: 128px;
-  }
-
   .home-start-window {
     left: 22px;
     right: 22px;
     bottom: 118px;
     height: 138px;
-  }
-
-  .home-start-button-image {
-    width: 170px;
   }
 
   .home-decoration-gameboy {

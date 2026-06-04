@@ -19,11 +19,11 @@ const HOME_ASSETS = {
   catAvatar: "/assets/icons/cat-avatar.png",
   pinkPet: "/pet-pink.png",
   bluePet: "/pet-blue.png",
-  musicEgg: "/assets/pets/music-egg.png",
+  musicEgg: "/music-egg.png",
   diamond: "/assets/icons/pink-gem.png",
   plus: "/assets/icons/plus-button.png",
   menu: "/assets/icons/menu-icon.png",
-  startButton: "/assets/ui/start-button.png",
+  startButton: "/button-start.png",
   homeIcon: "/assets/icons/home-icon.png",
   backpackIcon: "/backpack-icon.png",
   mapIcon: "/assets/map/map-icon.png",
@@ -124,27 +124,15 @@ function HomeDecorationLayer() {
 }
 
 function PixelPinkCat() {
-  return (
-    <div className="stage-pet stage-pet-pink" aria-hidden="true">
-      <img src={HOME_ASSETS.pinkPet} alt="" className="stage-pet-image" />
-    </div>
-  );
+  return <img src={HOME_ASSETS.pinkPet} alt="" className="stage-pet stage-pet-pink" aria-hidden="true" />;
 }
 
 function PixelBlueCat() {
-  return (
-    <div className="stage-pet stage-pet-blue" aria-hidden="true">
-      <img src={HOME_ASSETS.bluePet} alt="" className="stage-pet-image" />
-    </div>
-  );
+  return <img src={HOME_ASSETS.bluePet} alt="" className="stage-pet stage-pet-blue" aria-hidden="true" />;
 }
 
 function PixelPetEgg() {
-  return (
-    <div className="stage-egg" aria-hidden="true">
-      <img src={HOME_ASSETS.musicEgg} alt="" className="stage-egg-image" />
-    </div>
-  );
+  return <img src={HOME_ASSETS.musicEgg} alt="" className="stage-egg" aria-hidden="true" />;
 }
 
 function HomeScreen({ onStart }: { onStart: () => void }) {
@@ -183,7 +171,7 @@ function HomeScreen({ onStart }: { onStart: () => void }) {
             </div>
             <div className="home-start-copy-divider" aria-hidden="true" />
             <button type="button" className="home-start-button" onClick={onStart} aria-label="開始音樂旅程">
-              <img src={HOME_ASSETS.startButton} alt="" className="home-start-button-image" />
+              <img src={HOME_ASSETS.startButton} alt="START" className="home-start-button-image" />
             </button>
           </div>
         </section>
