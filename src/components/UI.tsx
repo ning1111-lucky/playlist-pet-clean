@@ -2,6 +2,7 @@ import React from "react";
 import { cn } from "../utils";
 import { Genre, ItemPart, MusicItem } from "../types";
 import { getAssetErrorFallback, resolveAssetImage } from "../assetMap";
+import { UI_ASSETS } from "../uiAssets";
 
 export type PixelIconType =
   | "cat"
@@ -11,11 +12,14 @@ export type PixelIconType =
   | "coin"
   | "backpack"
   | "map"
+  | "home"
   | "shoe"
   | "jacket"
   | "headphone"
+  | "headphones-item"
   | "cassette"
   | "star"
+  | "star-badge"
   | "heart"
   | "lock"
   | "check"
@@ -26,7 +30,8 @@ export type PixelIconType =
   | "ticket"
   | "sunglasses"
   | "spark"
-  | "cap";
+  | "cap"
+  | "gameboy";
 
 type PixelRect = {
   x: number;
@@ -51,7 +56,7 @@ const GR = "#8f96a3";
 
 const rect = (x: number, y: number, fill: string, w = 1, h = 1): PixelRect => ({ x, y, fill, w, h });
 
-const iconRects: Record<PixelIconType, PixelRect[]> = {
+const iconRects: Partial<Record<PixelIconType, PixelRect[]>> = {
   cat: [
     rect(4, 1, O, 2, 1), rect(10, 1, O, 2, 1),
     rect(3, 2, O, 1, 2), rect(6, 2, O, 1, 2), rect(9, 2, O, 1, 2), rect(12, 2, O, 1, 2),
@@ -182,6 +187,33 @@ const iconRects: Record<PixelIconType, PixelRect[]> = {
   ],
 };
 
+const iconAssetMap: Partial<Record<PixelIconType, string>> = {
+  cat: UI_ASSETS.catAvatar,
+  egg: UI_ASSETS.musicEgg,
+  "music-note": UI_ASSETS.musicNote,
+  gem: UI_ASSETS.pinkGem,
+  coin: UI_ASSETS.goldCoin,
+  backpack: UI_ASSETS.backpack,
+  map: UI_ASSETS.mapIcon,
+  home: UI_ASSETS.homeIcon,
+  shoe: UI_ASSETS.redSneakers,
+  jacket: UI_ASSETS.blueJacket,
+  headphone: UI_ASSETS.headphone,
+  "headphones-item": UI_ASSETS.pinkHeadphones,
+  cassette: UI_ASSETS.cassetteTape,
+  star: UI_ASSETS.star,
+  "star-badge": UI_ASSETS.goldStarBadge,
+  heart: UI_ASSETS.heart,
+  lock: UI_ASSETS.lockIcon,
+  check: UI_ASSETS.checkIcon,
+  menu: UI_ASSETS.menuIcon,
+  plus: UI_ASSETS.plusButton,
+  ticket: UI_ASSETS.mapTicket,
+  sunglasses: UI_ASSETS.blackSunglasses,
+  spark: UI_ASSETS.sparkleConfettiSamples,
+  gameboy: UI_ASSETS.gameboy,
+};
+
 export const PixelIcon = ({
   type,
   size = 20,
@@ -191,7 +223,20 @@ export const PixelIcon = ({
   size?: number;
   className?: string;
 }) => {
-  const shapes = iconRects[type] || iconRects.star;
+  const assetPath = iconAssetMap[type];
+  if (assetPath) {
+    return (
+      <span
+        className={cn("pixel-icon-image", className)}
+        style={{ width: size, height: size, minWidth: size, minHeight: size }}
+        aria-hidden="true"
+      >
+        <img src={assetPath} alt="" className="pixel-art-image" />
+      </span>
+    );
+  }
+
+  const shapes = iconRects[type] || iconRects.star || [];
 
   return (
     <svg
@@ -367,9 +412,9 @@ export const getGenreIconType = (genre: Genre): PixelIconType => {
 export const getPartIconType = (part: ItemPart): PixelIconType => {
   const map: Record<ItemPart | string, PixelIconType> = {
     clothes: "jacket",
-    headwear: "cap",
-    accessory: "heart",
-    handheld: "microphone",
+    headwear: "sunglasses",
+    accessory: "star-badge",
+    handheld: "gameboy",
     shoes: "shoe",
     enhance: "spark",
     "final weekly pet": "egg",
@@ -398,8 +443,7 @@ export const PixelItemPlaceholder: React.FC<{
           <img
             src={imagePath}
             alt={`${genre} ${part}`}
-            className="w-16 h-16 object-contain"
-            style={{ imageRendering: "pixelated" }}
+            className="pixel-art-image w-16 h-16"
             onError={(event) => {
               const fallback = getAssetErrorFallback(genre, part, imagePath, `${genre}-${part}`);
               if (fallback && fallback !== imagePath) {
@@ -460,7 +504,7 @@ export const PixelItemCard = ({ item, fallbackDay, className }: { item?: MusicIt
 export const PixelPetPreview = ({ imageSrc, title, subtitle, className }: { imageSrc?: string | null; title?: string; subtitle?: string; className?: string }) => (
   <div className={cn("pixel-pet-preview", className)}>
     <div className="pixel-pet-preview-frame">
-      {imageSrc ? <img src={imageSrc} alt={title || "pet"} className="w-full h-full object-contain" style={{ imageRendering: "pixelated" }} /> : <img src="/base-1.png" alt="pet base" className="w-full h-full object-contain" style={{ imageRendering: "pixelated" }} />}
+      {imageSrc ? <img src={imageSrc} alt={title || "pet"} className="pixel-art-image w-full h-full" /> : <img src="/base-1.png" alt="pet base" className="pixel-art-image w-full h-full" />}
     </div>
     {title ? <div className="pixel-pet-preview-title">{title}</div> : null}
     {subtitle ? <div className="pixel-pet-preview-subtitle">{subtitle}</div> : null}

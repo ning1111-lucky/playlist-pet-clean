@@ -31,8 +31,7 @@ export const LayeredWeeklyPet: React.FC<LayeredWeeklyPetProps> = ({ baseSrc, ite
         <img
           src={baseSrc}
           alt="Base Pet"
-          className="absolute inset-0 w-full h-full object-contain z-[1]"
-          style={{ imageRendering: "pixelated" }}
+          className="absolute inset-0 w-full h-full pixel-art-image z-[1]"
         />
       ) : (
         <div className="absolute inset-0 flex items-center justify-center text-6xl z-[1]">
@@ -50,9 +49,8 @@ export const LayeredWeeklyPet: React.FC<LayeredWeeklyPetProps> = ({ baseSrc, ite
             key={item.id}
             src={item.imageSrc}
             alt={item.part}
-            className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+            className="absolute inset-0 w-full h-full pixel-art-image pointer-events-none"
             style={{
-              imageRendering: "pixelated",
               zIndex: placement.zIndex,
             }}
             onError={(event) => {

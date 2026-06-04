@@ -125,7 +125,7 @@ export const MapView: React.FC = () => {
                   >
                     <div className="map-pet-pin">
                       {entry.petImage ? (
-                        <img src={entry.petImage} alt={entry.petName} className="h-full w-full object-contain scale-[0.82]" />
+                        <img src={entry.petImage} alt={entry.petName} className="pixel-art-image h-full w-full scale-[0.82]" />
                       ) : (
                         <PetPlaceholder baseType={entry.baseType} className="h-full w-full scale-[0.78]" />
                       )}

@@ -38,7 +38,7 @@ const getInitialActiveTab = (): ActiveTab => {
 const BottomNavIcon = ({ type, active }: { type: string; active: boolean }) => {
   return (
     <div className="modern-tab-icon">
-      {type === "today" && <PixelIcon type="music-note" size={20} />}
+      {type === "today" && <PixelIcon type="home" size={20} />}
       {type === "items" && <PixelIcon type="backpack" size={20} />}
       {type === "map" && <PixelIcon type="map" size={20} />}
     </div>

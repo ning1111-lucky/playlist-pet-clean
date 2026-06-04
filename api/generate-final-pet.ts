@@ -99,6 +99,20 @@ function normalizeOptionalString(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
 }
 
+function getImageInputType(value: unknown) {
+  if (typeof value !== "string" || !value.trim()) return "empty";
+  const input = value.trim();
+  if (input.startsWith("data:image/")) return "data-url";
+  if (input.startsWith("http://") || input.startsWith("https://")) return "absolute-url";
+  if (input.startsWith("/")) return "relative-url";
+  return "unknown";
+}
+
+function previewInput(value: unknown) {
+  if (typeof value !== "string") return "";
+  return value.slice(0, 80);
+}
+
 function resolveImageUrl(req: ApiRequest, value: string): string {
   const normalizedValue = String(value || "").trim();
   if (!normalizedValue) return "";
@@ -238,12 +252,27 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
     return jsonResponse(res, 405, { ok: false, error: "Only POST is allowed" });
   }
 
+  let step = "start";
+  let baseImageInputType = "unknown";
+  let baseImagePreview = "";
+  let itemInputTypes: Record<string, string> = {};
+  let itemCount = 0;
+
   const apiKey = process.env.OPENAI_API_KEY || "";
   if (!apiKey) {
-    return jsonResponse(res, 500, { ok: false, error: "Missing OPENAI_API_KEY" });
+    return jsonResponse(res, 500, {
+      ok: false,
+      error: "Missing OPENAI_API_KEY",
+      debug: {
+        step,
+        baseImageInputType,
+        baseImagePreview,
+        itemInputTypes,
+        itemCount,
+        model: DEFAULT_OPENAI_IMAGE_MODEL,
+      },
+    });
   }
-
-  let step = "start";
 
   try {
     step = "read-request-body";
@@ -252,6 +281,17 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
     const itemImageUrls = (isRecord(body.itemImageUrls) ? body.itemImageUrls : {}) as ItemImageUrls;
     const mainGenre = normalizeOptionalString(body.mainGenre);
     const subGenre = normalizeOptionalString(body.subGenre);
+
+    baseImageInputType = getImageInputType(baseImageUrl);
+    baseImagePreview = previewInput(baseImageUrl);
+    itemInputTypes = {
+      clothes: getImageInputType(itemImageUrls.clothes),
+      shoes: getImageInputType(itemImageUrls.shoes),
+      headwear: getImageInputType(itemImageUrls.headwear),
+      handheld: getImageInputType(itemImageUrls.handheld),
+      accessory: getImageInputType(itemImageUrls.accessory),
+    };
+    itemCount = Object.values(itemInputTypes).filter((type) => type !== "empty").length;
 
     if (!baseImageUrl) {
       return jsonResponse(res, 400, { ok: false, error: "Missing baseImageUrl" });
@@ -311,6 +351,11 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
       error: message,
       debug: {
         step,
+        baseImageInputType,
+        baseImagePreview,
+        itemInputTypes,
+        itemCount,
+        model: DEFAULT_OPENAI_IMAGE_MODEL,
       },
     };
 
