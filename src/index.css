@@ -2058,11 +2058,48 @@ html, body, #root {
 }
 
 .status-action-image {
-  width: 28px;
-  height: 28px;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
   display: block;
   image-rendering: pixelated;
+}
+
+.login-home-shell .home-start-page .home-status-bar {
+  top: 14px;
+  left: 16px;
+  right: 16px;
+}
+
+.login-home-shell .home-start-page .pixel-status-bar.home-status-bar {
+  min-height: 58px;
+  padding: 0 12px;
+  border-radius: 20px;
+}
+
+.login-home-shell .home-start-page .status-avatar {
+  border-radius: 10px;
+}
+
+.login-home-shell .home-start-page .status-level-label {
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.login-home-shell .home-start-page .status-xp-track {
+  width: 105px;
+  height: 9px;
+}
+
+.login-home-shell .home-start-page .status-actions {
+  gap: 8px;
+}
+
+.login-home-shell .home-start-page .status-gem-chip {
+  min-width: 96px;
+  width: auto;
+  border-radius: 9px;
+  font-weight: 800;
 }
 
 .home-logo-area {
@@ -2386,6 +2423,12 @@ html, body, #root {
     top: 18px;
     left: 18px;
     right: 18px;
+  }
+
+  .login-home-shell .home-start-page .home-status-bar {
+    top: 14px;
+    left: 16px;
+    right: 16px;
   }
 
   .home-logo-area {
