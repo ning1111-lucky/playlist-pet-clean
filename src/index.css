@@ -1846,6 +1846,7 @@ html, body, #root {
   height: auto;
   object-fit: contain;
   image-rendering: pixelated;
+  opacity: 0.82;
 }
 
 .home-decoration-gameboy {
@@ -2039,7 +2040,7 @@ html, body, #root {
 
 .home-logo-area {
   position: absolute;
-  top: 98px;
+  top: 105px;
   left: 0;
   right: 0;
   z-index: 2;
@@ -2049,7 +2050,7 @@ html, body, #root {
 }
 
 .home-logo-image {
-  width: clamp(260px, 72vw, 292px);
+  width: 230px;
   height: auto;
   object-fit: contain;
   image-rendering: pixelated;
@@ -2057,9 +2058,9 @@ html, body, #root {
 
 .home-logo-subtitle {
   max-width: 21ch;
-  margin: 10px 0 0;
+  margin: 8px 0 0;
   padding: 0 20px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 900;
   color: #fff;
   line-height: 1.42;
@@ -2068,10 +2069,10 @@ html, body, #root {
 
 .home-stage {
   position: absolute;
-  top: 245px;
+  top: 210px;
   left: 0;
   right: 0;
-  height: 210px;
+  height: 190px;
   z-index: 2;
 }
 
@@ -2083,22 +2084,22 @@ html, body, #root {
 
 .stage-pet {
   position: absolute;
-  bottom: 35px;
+  top: 72px;
 }
 
 .stage-egg {
   position: absolute;
-  top: 0;
+  top: 20px;
   left: 50%;
   transform: translateX(-50%);
 }
 
 .stage-pet-pink {
-  left: 45px;
+  left: 42px;
 }
 
 .stage-pet-blue {
-  right: 45px;
+  right: 42px;
 }
 
 .stage-pet-image,
@@ -2110,11 +2111,11 @@ html, body, #root {
 }
 
 .stage-pet-image {
-  width: 82px;
+  width: 76px;
 }
 
 .stage-egg-image {
-  width: 130px;
+  width: 118px;
 }
 
 .home-start-window {
@@ -2123,7 +2124,7 @@ html, body, #root {
   right: 20px;
   bottom: 95px;
   z-index: 3;
-  min-height: 150px;
+  height: 145px;
   border: 3px solid #111;
   border-radius: 18px;
   background: linear-gradient(180deg, #fffaf3 0%, #fff6ea 100%);
@@ -2134,7 +2135,7 @@ html, body, #root {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 30px;
+  min-height: 28px;
   padding: 4px 10px;
   border-bottom: 3px solid #111;
   background: linear-gradient(180deg, #ff5fb0 0%, #ff3f98 100%);
@@ -2165,15 +2166,15 @@ html, body, #root {
 .home-start-window-body {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 16px 14px 14px;
+  gap: 10px;
+  padding: 14px 18px;
 }
 
 .home-start-copy {
   margin: 0;
   font-weight: 800;
-  font-size: 0.94rem;
-  line-height: 1.58;
+  font-size: 13px;
+  line-height: 1.5;
   text-align: left;
 }
 
@@ -2205,7 +2206,7 @@ html, body, #root {
 }
 
 .home-start-button-image {
-  width: min(100%, 240px);
+  width: min(100%, 190px);
   height: auto;
   display: block;
   image-rendering: pixelated;
@@ -2353,11 +2354,11 @@ html, body, #root {
   }
 
   .home-logo-area {
-    top: 98px;
+    top: 105px;
   }
 
   .home-logo-image {
-    width: min(72vw, 286px);
+    width: min(62vw, 230px);
   }
 
   .home-logo-subtitle {
@@ -2366,8 +2367,8 @@ html, body, #root {
   }
 
   .home-stage {
-    top: 246px;
-    height: 196px;
+    top: 210px;
+    height: 190px;
   }
 
   .stage-pet-pink {
@@ -2379,25 +2380,26 @@ html, body, #root {
   }
 
   .stage-pet {
-    bottom: 26px;
+    top: 74px;
   }
 
   .stage-pet-image {
-    width: 76px;
+    width: 74px;
   }
 
   .stage-egg-image {
-    width: 122px;
+    width: 114px;
   }
 
   .home-start-window {
     left: 16px;
     right: 16px;
     bottom: 92px;
+    height: 138px;
   }
 
   .home-start-button-image {
-    width: min(100%, 228px);
+    width: min(100%, 186px);
   }
 
   .home-decoration-gameboy {
