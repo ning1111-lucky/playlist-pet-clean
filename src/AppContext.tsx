@@ -159,7 +159,7 @@ function normalizePart(value: unknown, fallbackIndex = 0): ItemPart {
   return COLLECTION_ITEM_PARTS[fallbackIndex] || "clothes";
 }
 
-function normalizeTrackRecord(value: unknown, provider: MusicProvider = "mock"): TrackRecord | null {
+function normalizeTrackRecord(value: unknown, provider: MusicProvider = "lastfm"): TrackRecord | null {
   if (!isRecord(value)) return null;
 
   const title =
@@ -465,7 +465,7 @@ function loadStoredState(): AppState {
             country: typeof parsed.userProfile.country === "string" && parsed.userProfile.country ? parsed.userProfile.country : "Taiwan",
             city: typeof parsed.userProfile.city === "string" && parsed.userProfile.city ? parsed.userProfile.city : "Taipei",
             style: typeof parsed.userProfile.style === "string" ? parsed.userProfile.style : undefined,
-            musicProvider: (typeof parsed.userProfile.musicProvider === "string" ? parsed.userProfile.musicProvider : "mock") as MusicProvider,
+            musicProvider: "lastfm",
             lastfmUsername: typeof parsed.userProfile.lastfmUsername === "string" ? parsed.userProfile.lastfmUsername : undefined,
             agreed: Boolean(parsed.userProfile.agreed),
           }
@@ -498,7 +498,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         ...previous,
         userProfile: {
           ...profile,
-          musicProvider: profile.musicProvider || "mock",
+          musicProvider: "lastfm",
           lastfmUsername: profile.lastfmUsername?.trim() || undefined,
         },
         hatchSession: previous.hatchSession || createNewHatchSession(),
@@ -514,7 +514,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         userProfile: {
           ...previous.userProfile,
           ...updates,
-          musicProvider: (updates.musicProvider || previous.userProfile.musicProvider || "mock") as MusicProvider,
+          musicProvider: "lastfm",
           lastfmUsername:
             updates.lastfmUsername !== undefined
               ? updates.lastfmUsername.trim() || undefined
@@ -556,7 +556,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const currentTracks = session.days[currentDay].tracks;
       session.days[currentDay].tracks = dedupeTracks([...currentTracks, ...tracks.map((track) => ({
         ...track,
-        provider: (track.provider || previous.userProfile?.musicProvider || "mock") as MusicProvider,
+        provider: (track.provider || previous.userProfile?.musicProvider || "lastfm") as MusicProvider,
       }))]);
       if (analysis !== undefined) {
         session.days[currentDay].analysis = analysis;
@@ -639,7 +639,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const autoFillWeek = async () => {
     const { getTodayMusicData } = await import("./mockData");
-    const provider = (state.userProfile?.musicProvider || "mock") as MusicProvider;
+    const provider = (state.userProfile?.musicProvider || "lastfm") as MusicProvider;
     const lastfmUsername = state.userProfile?.lastfmUsername;
     const startDate = addDaysToDateKey(toLocalDateKey(new Date()), -(TOTAL_DAYS - 1));
     const session = createNewHatchSession(startDate);

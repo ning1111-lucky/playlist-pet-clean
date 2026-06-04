@@ -2,11 +2,8 @@ import React, { useMemo, useState } from "react";
 import { motion } from "motion/react";
 import { useApp } from "../AppContext";
 import { MusicProvider } from "../types";
+import { getLastFmTodayMusicData } from "../mockData";
 import homeBg from "../assets/pixel/backgrounds/home-bg.png";
-import pinkCatSprite from "../assets/pixel/home/pink-cat.svg";
-import blueCatSprite from "../assets/pixel/home/blue-cat.svg";
-import musicEggSprite from "../assets/pixel/home/music-egg.svg";
-import catAvatarSprite from "../assets/pixel/home/cat-avatar.svg";
 import {
   PixelBadge,
   PixelButton,
@@ -14,40 +11,32 @@ import {
   PixelIconType,
   RetroWindow,
 } from "../components/UI";
+import { UI_ASSETS } from "../uiAssets";
 
 type OnboardingStep = "home" | "source" | "passport";
 
-const providerOptions: Array<{
-  value: MusicProvider;
-  badge: string;
-  title: string;
-  subtitle: string;
-  hint: string;
-  icon: PixelIconType;
-  buttonLabel: string;
-  tone: "green" | "blue";
-}> = [
-  {
-    value: "spotify",
-    badge: "SPOTIFY",
-    title: "Spotify 直連",
-    subtitle: "快速連結你的 Spotify 帳號，取得近期播放與常聽風格。",
-    hint: "登入後即可開始每日素材孵化。",
-    icon: "headphone",
-    buttonLabel: "CONNECT SPOTIFY",
-    tone: "green",
-  },
-  {
-    value: "lastfm",
-    badge: "SYNC",
-    title: "通用同步模式",
-    subtitle: "透過 Last.fm 同步其他音樂平台資料。",
-    hint: "適合 YouTube Music、Apple Music 與其他同步平台。",
-    icon: "globe",
-    buttonLabel: "SYNC MODE",
-    tone: "blue",
-  },
-];
+const LASTFM_PROVIDER = {
+  value: "lastfm" as MusicProvider,
+  badge: "LAST.FM",
+  title: "Last.fm 同步",
+  subtitle: "請先在 Last.fm 連接 Spotify Scrobbling，然後輸入你的 Last.fm username。",
+  hint: "本網站會讀取你的 Last.fm 今日聽歌紀錄，用來生成音樂寵物。",
+  icon: "globe" as PixelIconType,
+  tone: "blue" as const,
+};
+
+function toLocalDateKey(date: Date) {
+  const year = date.getFullYear();
+  const month = `${date.getMonth() + 1}`.padStart(2, "0");
+  const day = `${date.getDate()}`.padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function addDaysToLocalDateKey(dateKey: string, offset: number) {
+  const date = new Date(`${dateKey}T00:00:00`);
+  date.setDate(date.getDate() + offset);
+  return toLocalDateKey(date);
+}
 
 async function readApiJsonResponse(response: Response): Promise<Record<string, unknown>> {
   const rawText = await response.text().catch(() => "");
@@ -66,11 +55,7 @@ async function readApiJsonResponse(response: Response): Promise<Record<string, u
 function PixelGameboy() {
   return (
     <div className="pixel-prop-gameboy" aria-hidden="true">
-      <div className="pixel-prop-screen" />
-      <div className="pixel-prop-controls">
-        <span className="pixel-dpad" />
-        <span className="pixel-button-cluster" />
-      </div>
+      <img src={UI_ASSETS.gameboy} alt="" className="pixel-art-image" />
     </div>
   );
 }
@@ -116,18 +101,6 @@ function PixelDecorationLayer() {
         <PixelIcon type="spark" size={18} />
       </span>
 
-      <span className="home-confetti home-confetti-pink home-confetti-1" />
-      <span className="home-confetti home-confetti-yellow home-confetti-2" />
-      <span className="home-confetti home-confetti-blue home-confetti-3" />
-      <span className="home-confetti home-confetti-green home-confetti-4" />
-      <span className="home-confetti home-confetti-pink home-confetti-5" />
-      <span className="home-confetti home-confetti-yellow home-confetti-6" />
-      <span className="home-confetti home-confetti-blue home-confetti-7" />
-      <span className="home-confetti home-confetti-green home-confetti-8" />
-      <span className="home-confetti home-confetti-pink home-confetti-9" />
-      <span className="home-confetti home-confetti-yellow home-confetti-10" />
-      <span className="home-confetti home-confetti-blue home-confetti-11" />
-      <span className="home-confetti home-confetti-green home-confetti-12" />
     </div>
   );
 }
@@ -137,7 +110,7 @@ function HomeStatusBar() {
     <div className="pixel-status-bar home-status-bar">
       <div className="status-cluster">
         <div className="status-avatar">
-          <img src={catAvatarSprite} alt="" className="status-avatar-image" />
+          <img src={UI_ASSETS.catAvatar} alt="" className="status-avatar-image pixel-art-image" />
         </div>
         <div className="status-level-stack">
           <div className="status-level-label">LV.01</div>
@@ -167,7 +140,7 @@ function PixelPinkCat() {
   return (
     <div className="stage-pet stage-pet-pink" aria-hidden="true">
       <div className="stage-pet-sprite">
-        <img src={pinkCatSprite} alt="" className="stage-pet-image" />
+        <img src={UI_ASSETS.pinkCatPet} alt="" className="stage-pet-image pixel-art-image" />
       </div>
       <div className="stage-pet-bubble">
         <PixelIcon type="heart" size={12} />
@@ -180,7 +153,7 @@ function PixelBlueCat() {
   return (
     <div className="stage-pet stage-pet-blue" aria-hidden="true">
       <div className="stage-pet-sprite">
-        <img src={blueCatSprite} alt="" className="stage-pet-image" />
+        <img src={UI_ASSETS.blueCatPet} alt="" className="stage-pet-image pixel-art-image" />
       </div>
       <div className="stage-pet-headphone">
         <PixelIcon type="headphone" size={18} />
@@ -196,7 +169,7 @@ function PixelPetEgg() {
   return (
     <div className="stage-egg" aria-hidden="true">
       <div className="stage-egg-shell">
-        <img src={musicEggSprite} alt="" className="stage-egg-image" />
+        <img src={UI_ASSETS.musicEgg} alt="" className="stage-egg-image pixel-art-image" />
       </div>
     </div>
   );
@@ -253,10 +226,20 @@ function HomeScreen({ onStart }: { onStart: () => void }) {
 }
 
 function SourceSelectView({
-  onChoose,
+  lastfmUsername,
+  onUsernameChange,
+  onSave,
+  onTestRecentTracks,
+  isTestingRecentTracks,
+  testResult,
   onBack,
 }: {
-  onChoose: (provider: MusicProvider) => void;
+  lastfmUsername: string;
+  onUsernameChange: (value: string) => void;
+  onSave: () => void;
+  onTestRecentTracks: () => void;
+  isTestingRecentTracks: boolean;
+  testResult: string | null;
   onBack: () => void;
 }) {
   return (
@@ -264,36 +247,58 @@ function SourceSelectView({
       <HomeStatusBar />
       <div className="source-page-title">
         <div className="source-page-kicker">MUSIC SOURCE</div>
-        <h1 className="source-page-heading">音樂入口</h1>
-        <p className="source-page-subtitle">選擇你的音樂入口，讓 Playlist Pet 開始同步你的聲音宇宙。</p>
+        <h1 className="source-page-heading">音樂來源設定</h1>
+        <p className="source-page-subtitle">
+          請先在 Last.fm 連接 Spotify Scrobbling，然後輸入你的 Last.fm username。
+          <br />
+          本網站會讀取你的 Last.fm 今日聽歌紀錄，用來生成音樂寵物。
+        </p>
       </div>
 
-      <RetroWindow title="音樂入口" tone="yellow">
+      <RetroWindow title="音樂來源設定" tone="yellow">
         <div className="source-screen-stack">
-          {providerOptions.map((option) => (
-            <div key={option.value} className="source-window-card source-window-card-large">
-              <div className="source-window-card-head">
-                <div className="source-window-icon">
-                  <PixelIcon type={option.icon} size={28} />
-                </div>
-                <div className="source-window-copy">
-                  <div className="source-window-copy-row source-window-copy-row-start">
-                    <PixelBadge tone={option.tone}>{option.badge}</PixelBadge>
-                  </div>
-                  <h3 className="window-mini-title">{option.title}</h3>
-                  <p className="window-copy">{option.subtitle}</p>
-                  <p className="window-hint">{option.hint}</p>
-                </div>
+          <div className="source-window-card source-window-card-large">
+            <div className="source-window-card-head">
+              <div className="source-window-icon">
+                <PixelIcon type={LASTFM_PROVIDER.icon} size={28} />
               </div>
-              <PixelButton
-                className="w-full justify-center"
-                variant={option.value === "spotify" ? "primary" : "blue"}
-                onClick={() => onChoose(option.value)}
-              >
-                {option.buttonLabel}
+              <div className="source-window-copy">
+                <div className="source-window-copy-row source-window-copy-row-start">
+                  <PixelBadge tone={LASTFM_PROVIDER.tone}>{LASTFM_PROVIDER.badge}</PixelBadge>
+                </div>
+                <h3 className="window-mini-title">{LASTFM_PROVIDER.title}</h3>
+                <p className="window-copy">{LASTFM_PROVIDER.subtitle}</p>
+                <p className="window-hint">{LASTFM_PROVIDER.hint}</p>
+              </div>
+            </div>
+
+            <label className="passport-field">
+              <span className="window-label">Last.fm username</span>
+              <input
+                value={lastfmUsername}
+                onChange={(event) => onUsernameChange(event.target.value)}
+                placeholder="例如：musiclover123"
+                className="pixel-input"
+              />
+            </label>
+
+            <div className="window-hint">
+              如果你使用 Spotify，請先到 Last.fm：
+              <br />
+              Settings → Applications → Spotify Scrobbling → Connect
+            </div>
+
+            {testResult ? <div className="window-hint">{testResult}</div> : null}
+
+            <div className="window-button-row">
+              <PixelButton className="w-full justify-center" variant="blue" onClick={onSave} disabled={!lastfmUsername.trim()}>
+                儲存並讀取音樂
+              </PixelButton>
+              <PixelButton className="w-full justify-center" variant="secondary" onClick={onTestRecentTracks} disabled={!lastfmUsername.trim() || isTestingRecentTracks}>
+                {isTestingRecentTracks ? "測試中..." : "測試最近 10 首"}
               </PixelButton>
             </div>
-          ))}
+          </div>
 
           <PixelButton variant="secondary" className="w-full justify-center" onClick={onBack}>
             BACK
@@ -312,16 +317,51 @@ export const LoginView: React.FC = () => {
   const [country, setCountry] = useState("");
   const [city, setCity] = useState("");
   const [style, setStyle] = useState("");
-  const [musicProvider, setMusicProvider] = useState<MusicProvider>("spotify");
+  const musicProvider: MusicProvider = "lastfm";
   const [lastfmUsername, setLastfmUsername] = useState("");
   const [agreed, setAgreed] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isTestingRecentTracks, setIsTestingRecentTracks] = useState(false);
+  const [recentTrackTestResult, setRecentTrackTestResult] = useState<string | null>(null);
 
-  const selectedProvider = useMemo(
-    () => providerOptions.find((option) => option.value === musicProvider) || providerOptions[0],
-    [musicProvider]
-  );
+  const selectedProvider = useMemo(() => LASTFM_PROVIDER, []);
+
+  const handleTestRecentTracks = async () => {
+    const username = lastfmUsername.trim();
+    if (!username) {
+      setRecentTrackTestResult("請先輸入 Last.fm username。");
+      return;
+    }
+
+    const today = toLocalDateKey(new Date());
+    const tomorrow = addDaysToLocalDateKey(today, 1);
+    setIsTestingRecentTracks(true);
+    setRecentTrackTestResult(null);
+
+    try {
+      const payload = await getLastFmTodayMusicData(username, {
+        dayStart: today,
+        dayEnd: tomorrow,
+        dayIndex: 1,
+        startDate: today,
+        debugRecentOnly: true,
+      });
+      const parsedTrackCount = payload.debug?.parsedTrackCount ?? payload.tracks.length;
+      const recentRawCount = payload.debug?.recentRawCount ?? 0;
+      setRecentTrackTestResult(
+        parsedTrackCount > 0
+          ? `最近 10 首測試成功，讀到 ${parsedTrackCount} 首可用歌曲。`
+          : recentRawCount > 0
+            ? "Last.fm 最近 10 首有資料，但目前沒有可用歌曲落在今日視窗。"
+            : "尚未讀到 Last.fm 播放紀錄。請確認你已在 Last.fm 連接 Spotify Scrobbling，並且 Spotify 已播放歌曲。"
+      );
+    } catch (error) {
+      setRecentTrackTestResult(error instanceof Error ? error.message : "Last.fm 最近 10 首測試失敗。");
+    } finally {
+      setIsTestingRecentTracks(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -361,8 +401,11 @@ export const LoginView: React.FC = () => {
     }
   };
 
-  const handleChooseProvider = (provider: MusicProvider) => {
-    setMusicProvider(provider);
+  const handleSaveSource = () => {
+    if (!lastfmUsername.trim()) {
+      setRecentTrackTestResult("請先輸入 Last.fm username。");
+      return;
+    }
     setStep("passport");
   };
 
@@ -377,7 +420,15 @@ export const LoginView: React.FC = () => {
   if (step === "source") {
     return (
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="page-stack">
-        <SourceSelectView onChoose={handleChooseProvider} onBack={() => setStep("home")} />
+        <SourceSelectView
+          lastfmUsername={lastfmUsername}
+          onUsernameChange={setLastfmUsername}
+          onSave={handleSaveSource}
+          onTestRecentTracks={handleTestRecentTracks}
+          isTestingRecentTracks={isTestingRecentTracks}
+          testResult={recentTrackTestResult}
+          onBack={() => setStep("home")}
+        />
       </motion.div>
     );
   }
@@ -398,7 +449,7 @@ export const LoginView: React.FC = () => {
             <div className="window-label">已選音樂入口</div>
             <div className="window-mini-title mt-1">{selectedProvider.title}</div>
           </div>
-          <PixelBadge tone={musicProvider === "spotify" ? "green" : "blue"}>{selectedProvider.badge}</PixelBadge>
+          <PixelBadge tone="blue">{selectedProvider.badge}</PixelBadge>
         </div>
 
         <form onSubmit={handleSubmit} className="passport-form-grid">
@@ -423,12 +474,10 @@ export const LoginView: React.FC = () => {
             <input value={style} onChange={(event) => setStyle(event.target.value)} placeholder="Y2K、復古、街頭…" className="pixel-input" />
           </label>
 
-          {musicProvider === "lastfm" && (
-            <label className="passport-field">
-              <span className="window-label">Last.fm 使用者名稱</span>
-              <input value={lastfmUsername} onChange={(event) => setLastfmUsername(event.target.value)} placeholder="例如：musiclover123" className="pixel-input" />
-            </label>
-          )}
+          <label className="passport-field">
+            <span className="window-label">Last.fm 使用者名稱</span>
+            <input value={lastfmUsername} onChange={(event) => setLastfmUsername(event.target.value)} placeholder="例如：musiclover123" className="pixel-input" />
+          </label>
 
           <label className="passport-checkbox-row">
             <input type="checkbox" checked={agreed} onChange={(event) => setAgreed(event.target.checked)} />
@@ -441,7 +490,7 @@ export const LoginView: React.FC = () => {
             <PixelButton
               type="submit"
               className="w-full justify-center"
-              disabled={isSubmitting || !agreed || !name || !email || !country || !city || (musicProvider === "lastfm" && !lastfmUsername.trim())}
+              disabled={isSubmitting || !agreed || !name || !email || !country || !city || !lastfmUsername.trim()}
             >
               {isSubmitting ? "同步中..." : "開始音樂旅程"}
             </PixelButton>

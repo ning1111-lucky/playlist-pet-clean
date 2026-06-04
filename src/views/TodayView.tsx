@@ -7,8 +7,14 @@ import { generateId } from "../utils";
 import { motion } from "motion/react";
 import { baseShapeMap, resolveAssetImage } from "../assetMap";
 import { getDayDate } from "../AppContext";
+import { UI_ASSETS } from "../uiAssets";
 
 const GENERATED_WEEKLY_PET_IMAGE_KEY = "generatedWeeklyPetImage";
+const questDayBadgeMap: Record<number, string> = {
+  1: UI_ASSETS.day1Badge,
+  2: UI_ASSETS.day2Badge,
+  3: UI_ASSETS.day3Badge,
+};
 
 export function normalizeGenre(genre: string): string {
   const map: Record<string, string> = {
@@ -150,6 +156,30 @@ async function syncUserProfileToNotion(profile: {
   }
 }
 
+function getLastFmStatusMessage(options: {
+  lastfmUsername?: string;
+  musicLoadCode?: string | null;
+  debug?: MusicFetchDebug | null;
+  fallbackError?: string | null;
+}) {
+  const username = options.lastfmUsername?.trim();
+  if (!username) return "請輸入 Last.fm username。";
+  if (options.musicLoadCode === "LASTFM_API_KEY_MISSING") return "Missing LASTFM_API_KEY。";
+  if (options.musicLoadCode === "LASTFM_USERNAME_REQUIRED") return "請輸入 Last.fm username。";
+  if (options.fallbackError) return options.fallbackError;
+
+  const debug = options.debug;
+  if (!debug) return null;
+  if (debug.error) return debug.error;
+  if ((debug.recentRawCount || 0) === 0 && (debug.parsedTrackCount || 0) === 0) {
+    return "尚未讀到 Last.fm 播放紀錄。請確認你已在 Last.fm 連接 Spotify Scrobbling，並且 Spotify 已播放歌曲。";
+  }
+  if ((debug.recentRawCount || 0) > 0 && (debug.parsedTrackCount || 0) === 0) {
+    return "Last.fm 有播放紀錄，但不在目前 Hatch Day 日期範圍內。請檢查 startDate / currentDay / 時區。";
+  }
+  return null;
+}
+
 export const TodayView: React.FC<{ navigateTo: (tab: "today" | "items" | "map") => void }> = ({ navigateTo }) => {
   const {
     currentMockDay,
@@ -187,9 +217,6 @@ export const TodayView: React.FC<{ navigateTo: (tab: "today" | "items" | "map") 
   const [recentDebug, setRecentDebug] = useState<MusicFetchDebug | null>(null);
   const [recentDebugError, setRecentDebugError] = useState<string | null>(null);
   const [testingRecentTracks, setTestingRecentTracks] = useState(false);
-  const [spotifyConnected, setSpotifyConnected] = useState<boolean | null>(null);
-  const [spotifyDisplayName, setSpotifyDisplayName] = useState<string | null>(null);
-  const [showMusicSourcePanel, setShowMusicSourcePanel] = useState(false);
   const [draftLastfmUsername, setDraftLastfmUsername] = useState(userProfile?.lastfmUsername || "");
   const [selectedBase, setSelectedBase] = useState<string | null>(null);
   const [selectedClothes, setSelectedClothes] = useState<string | null>(null);
@@ -230,7 +257,7 @@ export const TodayView: React.FC<{ navigateTo: (tab: "today" | "items" | "map") 
     return addDaysToLocalDateKey(currentDayDate, 1);
   }, [currentDayDate]);
   const daySlotConfigs = getDaySlotConfigs(safeDay);
-  const activeMusicProvider = userProfile?.musicProvider || "mock";
+  const activeMusicProvider = "lastfm";
   const distribution = Array.isArray(mockMusic?.distribution) ? mockMusic.distribution : [];
   const primarySuggestedGenre = normalizeGenre((mockMusic?.assetGenre || mockMusic?.mainGenre || "Pop") as string) as Genre;
   const secondarySuggestedGenre = normalizeGenre((mockMusic?.subGenre || primarySuggestedGenre) as string) as Genre;
@@ -299,7 +326,7 @@ export const TodayView: React.FC<{ navigateTo: (tab: "today" | "items" | "map") 
         }
         setMusicFetchDebug(
           payload.debug || {
-            source: activeMusicProvider,
+            source: "lastfm",
             username: userProfile?.lastfmUsername || "",
             currentDay: safeDay,
             startDate: hatchSession?.startDate || "",
@@ -308,14 +335,20 @@ export const TodayView: React.FC<{ navigateTo: (tab: "today" | "items" | "map") 
             parsedTrackCount: payload.tracks.length,
           }
         );
+        setMusicLoadError(
+          getLastFmStatusMessage({
+            lastfmUsername: userProfile?.lastfmUsername,
+            debug: payload.debug || null,
+          })
+        );
         setMockMusic(payload.data);
         saveTracksForCurrentDay(payload.tracks, payload.data);
       })
       .catch((error: Error & { code?: string; debug?: MusicFetchDebug | null }) => {
         if (!active) return;
-        setMusicFetchDebug(
+        const fallbackDebug =
           error.debug || {
-            source: activeMusicProvider,
+            source: "lastfm" as const,
             username: userProfile?.lastfmUsername || "",
             currentDay: safeDay,
             startDate: hatchSession?.startDate || "",
@@ -323,10 +356,19 @@ export const TodayView: React.FC<{ navigateTo: (tab: "today" | "items" | "map") 
             dayEndISO: nextDayDate,
             parsedTrackCount: 0,
             error: error.message || "音樂資料讀取失敗。",
-          }
+          };
+        setMusicFetchDebug(
+          fallbackDebug
         );
         setMockMusic(null);
-        setMusicLoadError(error.message || "音樂資料讀取失敗。");
+        setMusicLoadError(
+          getLastFmStatusMessage({
+            lastfmUsername: userProfile?.lastfmUsername,
+            musicLoadCode: error.code || null,
+            debug: fallbackDebug,
+            fallbackError: error.message || "音樂資料讀取失敗。",
+          })
+        );
         setMusicLoadCode(error.code || null);
       });
 
@@ -334,37 +376,6 @@ export const TodayView: React.FC<{ navigateTo: (tab: "today" | "items" | "map") 
       active = false;
     };
   }, [safeDay, activeMusicProvider, userProfile?.lastfmUsername, currentDayDate, nextDayDate, hatchSession?.startDate]);
-
-  useEffect(() => {
-    if (activeMusicProvider !== "spotify") {
-      setSpotifyConnected(null);
-      setSpotifyDisplayName(null);
-      return;
-    }
-
-    let active = true;
-    fetch("/api/spotify/session", { credentials: "include" })
-      .then((response) => response.json())
-      .then((data) => {
-        if (!active) return;
-        if (data?.ok === true && data.connected) {
-          setSpotifyConnected(true);
-          setSpotifyDisplayName(typeof data.displayName === "string" ? data.displayName : "Spotify User");
-          return;
-        }
-        setSpotifyConnected(false);
-        setSpotifyDisplayName(null);
-      })
-      .catch(() => {
-        if (!active) return;
-        setSpotifyConnected(false);
-        setSpotifyDisplayName(null);
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [activeMusicProvider]);
 
   const collectedItems = safeWeekItems
     .slice(0, 5)
@@ -627,14 +638,6 @@ export const TodayView: React.FC<{ navigateTo: (tab: "today" | "items" | "map") 
     navigateTo("map");
   };
 
-  const handleConnectSpotify = () => {
-    window.location.href = "/api/spotify/auth";
-  };
-
-  const handleDisconnectSpotify = () => {
-    window.location.href = "/api/spotify/logout";
-  };
-
   const handleResetWeek = () => {
     clearGeneratedWeeklyPetImage();
     resetWeek();
@@ -666,51 +669,25 @@ export const TodayView: React.FC<{ navigateTo: (tab: "today" | "items" | "map") 
     return () => window.clearTimeout(timeoutId);
   }, [titleTapCount]);
 
-  const providerLabel =
-    activeMusicProvider === "spotify"
-      ? "Spotify 直連"
-      : activeMusicProvider === "lastfm"
-        ? "通用同步模式"
-        : "體驗模式";
+  const providerLabel = "Last.fm";
   const currentDayTrackCount = hatchSession?.days?.[safeDay]?.tracks?.length || 0;
   const currentDayItemCount = hatchSession?.days?.[safeDay]?.items?.length || todaysGeneratedItems.length;
   const currentDayXp = Math.min(300, currentDayTrackCount * 12 + currentDayItemCount * 40);
   const debugReason = useMemo(() => {
-    if (activeMusicProvider !== "lastfm") return "目前不是 Last.fm / 通用同步模式。";
-    if (!userProfile?.lastfmUsername?.trim()) return "Last.fm username 未设置";
-    if (musicLoadCode === "LASTFM_API_KEY_MISSING") return "Last.fm API key missing";
-    if (musicLoadCode === "LASTFM_API_ERROR") return "Last.fm API returned error";
-    if (musicLoadCode === "LASTFM_USERNAME_REQUIRED") return "Last.fm username missing";
+    if (!userProfile?.lastfmUsername?.trim()) return "請輸入 Last.fm username。";
+    if (musicLoadCode === "LASTFM_API_KEY_MISSING") return "Missing LASTFM_API_KEY。";
+    if (musicLoadCode === "LASTFM_API_ERROR") return "Last.fm API returned error.";
+    if (musicLoadCode === "LASTFM_USERNAME_REQUIRED") return "請輸入 Last.fm username。";
     if (musicFetchDebug?.error) return musicFetchDebug.error;
-    if ((musicFetchDebug?.dayRangeRawCount || 0) === 0 && (musicFetchDebug?.recentRawCount || 0) > 0) {
-      return "Last.fm recent tracks exist, but not in current hatch day.";
+    if ((musicFetchDebug?.recentRawCount || 0) === 0 && (musicFetchDebug?.parsedTrackCount || 0) === 0) {
+      return "尚未讀到 Last.fm 播放紀錄。請確認你已在 Last.fm 連接 Spotify Scrobbling，並且 Spotify 已播放歌曲。";
     }
-    if ((musicFetchDebug?.recentRawCount || 0) === 0) return "Last.fm recent fallback returned 0 tracks.";
-    if ((musicFetchDebug?.dayRangeRawCount || 0) > 0 && (musicFetchDebug?.parsedTrackCount || 0) === 0) {
-      return "Last.fm returned tracks, but parser filtered them out.";
+    if ((musicFetchDebug?.recentRawCount || 0) > 0 && (musicFetchDebug?.parsedTrackCount || 0) === 0) {
+      return "Last.fm 有播放紀錄，但不在目前 Hatch Day 日期範圍內。請檢查 startDate / currentDay / 時區。";
     }
-    if (currentDayTrackCount === 0) return "Day range returned 0 usable tracks.";
+    if (currentDayTrackCount === 0) return "Today day range returned 0 usable tracks.";
     return "Last.fm day-range lookup appears normal.";
-  }, [activeMusicProvider, currentDayTrackCount, musicFetchDebug, musicLoadCode, userProfile?.lastfmUsername]);
-  const handleProviderChange = (provider: "mock" | "spotify" | "lastfm") => {
-    updateUserProfile({ musicProvider: provider });
-    if (userProfile) {
-      syncUserProfileToNotion({
-        name: userProfile.name,
-        email: userProfile.email,
-        country: userProfile.country,
-        city: userProfile.city,
-        style: userProfile.style,
-        musicProvider: provider,
-        lastfmUsername: provider === "lastfm" ? userProfile.lastfmUsername : "",
-      }).catch(() => {
-        // Keep source switching responsive even if Notion sync fails.
-      });
-    }
-    if (provider !== "lastfm") {
-      setShowMusicSourcePanel(false);
-    }
-  };
+  }, [currentDayTrackCount, musicFetchDebug, musicLoadCode, userProfile?.lastfmUsername]);
 
   const handleSaveLastfmUsername = () => {
     const nextProfile = {
@@ -731,7 +708,7 @@ export const TodayView: React.FC<{ navigateTo: (tab: "today" | "items" | "map") 
         // Keep Last.fm save responsive even if Notion sync fails.
       });
     }
-    setShowMusicSourcePanel(false);
+    setMusicLoadError(null);
   };
 
   const handleDebugRecentTracks = async () => {
@@ -783,7 +760,14 @@ export const TodayView: React.FC<{ navigateTo: (tab: "today" | "items" | "map") 
             return (
               <div key={day} className={`quest-day-step is-${state}`}>
                 <div className="quest-day-dot">
-                  {state === "done" ? <PixelIcon type="check" size={18} /> : state === "locked" ? <PixelIcon type="lock" size={18} /> : day}
+                  <img
+                    src={questDayBadgeMap[day]}
+                    alt=""
+                    className={`quest-day-badge pixel-art-image ${state === "locked" ? "is-locked" : ""}`}
+                  />
+                  <span className="quest-day-icon-overlay">
+                    {state === "done" ? <PixelIcon type="check" size={18} /> : state === "locked" ? <PixelIcon type="lock" size={18} /> : day}
+                  </span>
                 </div>
                 <div className="quest-day-text">Day {day}</div>
                 <div className="quest-day-meta">{summary?.songCount || 0} songs</div>
@@ -797,59 +781,49 @@ export const TodayView: React.FC<{ navigateTo: (tab: "today" | "items" | "map") 
         <div className="window-stack-tight">
           <div className="window-title-row">
             <div>
-              <div className="window-mini-title">音樂來源</div>
+              <div className="window-mini-title">音樂來源設定</div>
               <p className="window-copy">
-                {activeMusicProvider === "spotify"
-                  ? "Spotify 已連接後會直接讀近期播放與常聽風格。"
-                  : activeMusicProvider === "lastfm"
-                    ? "目前使用通用同步模式，透過 Last.fm 讀取近期紀錄。"
-                    : "目前是體驗模式，使用示範資料。"}
+                請先在 Last.fm 連接 Spotify Scrobbling，然後輸入你的 Last.fm username。
+                <br />
+                本網站會讀取你的 Last.fm 今日聽歌紀錄，用來生成音樂寵物。
               </p>
             </div>
-            <PixelBadge tone={activeMusicProvider === "spotify" ? "green" : activeMusicProvider === "lastfm" ? "blue" : "yellow"}>
-              {providerLabel}
-            </PixelBadge>
+            <PixelBadge tone="blue">{providerLabel}</PixelBadge>
           </div>
 
-          <div className="window-button-row">
-            <Button variant="secondary" className="w-full justify-center" onClick={() => setShowMusicSourcePanel((value) => !value)}>
-              切換音樂來源
-            </Button>
-            {activeMusicProvider === "spotify" ? (
-              <Button variant="primary" className="w-full justify-center" onClick={spotifyConnected ? handleDisconnectSpotify : handleConnectSpotify}>
-                {spotifyConnected ? "已連接 Spotify" : "連接 Spotify"}
+          <div className="space-y-3">
+            <label className="passport-field">
+              <span className="window-label">Last.fm username</span>
+              <input
+                value={draftLastfmUsername}
+                onChange={(event) => setDraftLastfmUsername(event.target.value)}
+                className="pixel-input"
+                placeholder="例如：musiclover123"
+              />
+            </label>
+
+            <div className="window-hint">
+              如果你使用 Spotify，請先到 Last.fm：
+              <br />
+              Settings → Applications → Spotify Scrobbling → Connect
+            </div>
+
+            <div className="window-button-row">
+              <Button variant="secondary" className="w-full justify-center" onClick={handleSaveLastfmUsername} disabled={!draftLastfmUsername.trim()}>
+                儲存並讀取音樂
               </Button>
+              <Button variant="secondary" className="w-full justify-center" onClick={handleDebugRecentTracks} disabled={!draftLastfmUsername.trim() || testingRecentTracks}>
+                {testingRecentTracks ? "測試中..." : "測試最近 10 首"}
+              </Button>
+            </div>
+
+            {recentDebugError ? <div className="window-error">{recentDebugError}</div> : null}
+            {recentDebug ? (
+              <div className="window-hint">
+                最近 10 首測試：raw {recentDebug.recentRawCount ?? 0} / parsed {recentDebug.parsedTrackCount ?? 0}
+              </div>
             ) : null}
           </div>
-
-          {showMusicSourcePanel && (
-            <div className="source-switch-panel">
-              <button type="button" className={`source-switch-card ${activeMusicProvider === "spotify" ? "is-active" : ""}`} onClick={() => handleProviderChange("spotify")}>
-                <div className="type-label">Spotify 直連</div>
-                <div className="type-caption">直接授權最近播放與常聽風格。</div>
-              </button>
-              <button type="button" className={`source-switch-card ${activeMusicProvider === "lastfm" ? "is-active" : ""}`} onClick={() => handleProviderChange("lastfm")}>
-                <div className="type-label">通用同步模式</div>
-                <div className="type-caption">透過 Last.fm 同步其他音樂平台。</div>
-              </button>
-              {(activeMusicProvider === "lastfm" || showMusicSourcePanel) && (
-                <div className="space-y-3">
-                  <label className="passport-field">
-                    <span className="window-label">Last.fm 使用者名稱</span>
-                    <input
-                      value={draftLastfmUsername}
-                      onChange={(event) => setDraftLastfmUsername(event.target.value)}
-                      className="pixel-input"
-                      placeholder="例如：musiclover123"
-                    />
-                  </label>
-                  <Button variant="secondary" className="w-full justify-center" onClick={handleSaveLastfmUsername} disabled={!draftLastfmUsername.trim()}>
-                    儲存 Last.fm 帳號
-                  </Button>
-                </div>
-              )}
-            </div>
-          )}
         </div>
       </RetroWindow>
 
@@ -871,12 +845,7 @@ export const TodayView: React.FC<{ navigateTo: (tab: "today" | "items" | "map") 
           <div className="window-stack-tight text-center">
             <div className="window-mini-title">音樂資料尚未就緒</div>
             <p className="window-error">{musicLoadError}</p>
-            {activeMusicProvider === "spotify" ? (
-              <Button variant="primary" className="w-full justify-center" onClick={handleConnectSpotify}>
-                連接 Spotify
-              </Button>
-            ) : null}
-            {activeMusicProvider === "lastfm" && musicLoadCode === "LASTFM_USERNAME_REQUIRED" ? (
+            {musicLoadCode === "LASTFM_USERNAME_REQUIRED" ? (
               <p className="window-hint">目前登入資料沒有 Last.fm 使用者名稱，請回到入口頁重新填寫。</p>
             ) : null}
           </div>
@@ -974,7 +943,7 @@ export const TodayView: React.FC<{ navigateTo: (tab: "today" | "items" | "map") 
                 { key: "accessory", src: selectedAccessory, label: "accessory" },
               ].map((item) => (
                 <div key={item.key} className="analysis-asset-tile">
-                  {item.src ? <img src={item.src} alt={item.label} className="w-full h-full object-contain" style={{ imageRendering: "pixelated" }} /> : null}
+                  {item.src ? <img src={item.src} alt={item.label} className="pixel-art-image w-full h-full" /> : null}
                 </div>
               ))}
             </div>
@@ -1026,7 +995,7 @@ export const TodayView: React.FC<{ navigateTo: (tab: "today" | "items" | "map") 
                   <img
                     src={generatedImageUrl}
                     alt="Generated Pet"
-                    className="w-full h-full object-contain"
+                    className="pixel-art-image w-full h-full"
                     onLoad={() => {
                       setImgLoading(false);
                       setImgLoadError(false);
@@ -1144,35 +1113,25 @@ export const TodayView: React.FC<{ navigateTo: (tab: "today" | "items" | "map") 
               )}
             </div>
 
-            {activeMusicProvider === "lastfm" ? (
-              <>
-                <Button variant="secondary" className="w-full justify-center" onClick={handleDebugRecentTracks} disabled={testingRecentTracks}>
-                  {testingRecentTracks ? "測試中..." : "測試 Last.fm 最近 10 首"}
-                </Button>
-                {recentDebugError ? <div className="window-error">{recentDebugError}</div> : null}
-                {recentDebug ? (
-                  <div className="analysis-copy-block">
-                    <div className="window-label">recent-only test</div>
-                    <div className="window-hint"><strong>request：</strong>{recentDebug.requestUrlWithoutApiKey || recentDebug.recentRequestUrlWithoutApiKey || "-"}</div>
-                    <div className="window-hint"><strong>recentRawCount：</strong>{recentDebug.recentRawCount ?? 0}</div>
-                    <div className="window-hint"><strong>parsedTrackCount：</strong>{recentDebug.parsedTrackCount ?? 0}</div>
-                    {(recentDebug.recentFirstTracks || []).length > 0 ? (
-                      <div className="space-y-2">
-                        {(recentDebug.recentFirstTracks || []).map((track, index) => (
-                          <div key={`${track.name}-${index}`} className="window-hint">
-                            {index + 1}. {track.name} / {track.artist} / uts: {track.dateUts || "-"} / nowplaying: {track.nowplaying ? "true" : "false"}
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="window-hint">最近 10 首也沒有可顯示資料</div>
-                    )}
-                    {recentDebug.filteredOutReason ? <div className="window-hint"><strong>reason：</strong>{recentDebug.filteredOutReason}</div> : null}
-                    {recentDebug.error ? <div className="window-error">{recentDebug.error}</div> : null}
-                  </div>
-                ) : null}
-              </>
-            ) : null}
+            <div className="analysis-copy-block">
+              <div className="window-label">recent-only test</div>
+              <div className="window-hint"><strong>request：</strong>{recentDebug?.requestUrlWithoutApiKey || recentDebug?.recentRequestUrlWithoutApiKey || "-"}</div>
+              <div className="window-hint"><strong>recentRawCount：</strong>{recentDebug?.recentRawCount ?? 0}</div>
+              <div className="window-hint"><strong>parsedTrackCount：</strong>{recentDebug?.parsedTrackCount ?? 0}</div>
+              {(recentDebug?.recentFirstTracks || []).length > 0 ? (
+                <div className="space-y-2">
+                  {(recentDebug?.recentFirstTracks || []).map((track, index) => (
+                    <div key={`${track.name}-${index}`} className="window-hint">
+                      {index + 1}. {track.name} / {track.artist} / uts: {track.dateUts || "-"} / nowplaying: {track.nowplaying ? "true" : "false"}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="window-hint">最近 10 首也沒有可顯示資料</div>
+              )}
+              {recentDebug?.filteredOutReason ? <div className="window-hint"><strong>reason：</strong>{recentDebug.filteredOutReason}</div> : null}
+              {recentDebug?.error ? <div className="window-error">{recentDebug.error}</div> : null}
+            </div>
           </div>
         </RetroWindow>
       ) : null}

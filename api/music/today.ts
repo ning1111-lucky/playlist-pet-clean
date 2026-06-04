@@ -59,6 +59,10 @@ async function readJson<T>(response: Response): Promise<T> {
   return text.trim() ? (JSON.parse(text) as T) : ({} as T);
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
 function parseLocalDateKey(value: string): Date | null {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
   if (!match) return null;

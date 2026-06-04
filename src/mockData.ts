@@ -1,7 +1,7 @@
 import { DailyMusicData, DailyMusicPayload, Genre, ItemPart, MapEntry, Pet, MusicItem, MusicProvider, TrackRecord } from "./types";
 import { generateId } from "./utils";
 
-export const MUSIC_PROVIDER: MusicProvider = "mock";
+export const MUSIC_PROVIDER: MusicProvider = "lastfm";
 
 export const GENRES: Genre[] = [
   "Pop", "Hiphop", "Kpop", "EDM", "Classical",
