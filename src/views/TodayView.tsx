@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useApp } from "../AppContext";
 import { Button, PixelBadge, PixelIcon, PixelItemCard, PixelLogoTitle, PixelProgress, PixelStatusBar, RetroWindow } from "../components/UI";
 import { getBaseType, getCollectionSlotIndex, getDaySlotConfigs, getTodayMusicData, TOTAL_DAYS } from "../mockData";
-import { DailyMusicData, MusicItem, Genre, MapEntry, Pet, GeminiAssetAnalysis, MusicFetchDebug } from "../types";
+import { DailyMusicData, MusicItem, Genre, MapEntry, Pet, MusicFetchDebug, GenerateFinalPetResponse } from "../types";
 import { generateId } from "../utils";
 import { motion } from "motion/react";
 import { baseShapeMap, resolveAssetImage } from "../assetMap";
@@ -102,24 +102,6 @@ async function readApiJsonResponse(response: Response): Promise<Record<string, u
   };
 }
 
-async function appendImageAssetToFormData(formData: FormData, fieldName: string, source: string) {
-  try {
-    const response = await fetch(source);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch ${fieldName}`);
-    }
-
-    const blob = await response.blob();
-    const cleanPath = source.split("?")[0];
-    const extension = cleanPath.includes(".") ? cleanPath.split(".").pop() || "png" : "png";
-    const mimeType = blob.type || (extension === "jpg" || extension === "jpeg" ? "image/jpeg" : "image/png");
-    const file = new File([blob], `${fieldName}.${extension}`, { type: mimeType });
-    formData.append(fieldName, file);
-  } catch {
-    formData.append(fieldName, source);
-  }
-}
-
 function extractAssetKeyFromPath(value: string | null | undefined): string {
   if (!value) return "";
   const cleanPath = value.split("?")[0] || "";
@@ -194,7 +176,6 @@ export const TodayView: React.FC<{ navigateTo: (tab: "today" | "items" | "map") 
 
   const [mockMusic, setMockMusic] = useState<DailyMusicData | null>(null);
   const [showGenAnim, setShowGenAnim] = useState(false);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [imgLoading, setImgLoading] = useState(Boolean(getStoredGeneratedImage()));
@@ -202,9 +183,6 @@ export const TodayView: React.FC<{ navigateTo: (tab: "today" | "items" | "map") 
   const [imgLoaded, setImgLoaded] = useState(false);
   const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(() => getStoredGeneratedImage());
   const [generatedPetProvider, setGeneratedPetProvider] = useState<string | null>(null);
-  const [analysis, setAnalysis] = useState<GeminiAssetAnalysis | null>(null);
-  const [finalPrompt, setFinalPrompt] = useState("");
-  const [notionPromptContext, setNotionPromptContext] = useState("");
   const [musicLoadError, setMusicLoadError] = useState<string | null>(null);
   const [musicLoadCode, setMusicLoadCode] = useState<string | null>(null);
   const [musicFetchDebug, setMusicFetchDebug] = useState<MusicFetchDebug | null>(null);
@@ -434,8 +412,6 @@ export const TodayView: React.FC<{ navigateTo: (tab: "today" | "items" | "map") 
     setImgLoadError(false);
     setImgLoaded(false);
     setGeneratedPetProvider(null);
-    setAnalysis(null);
-    setFinalPrompt("");
 
     try {
       localStorage.removeItem(GENERATED_WEEKLY_PET_IMAGE_KEY);
@@ -460,6 +436,8 @@ export const TodayView: React.FC<{ navigateTo: (tab: "today" | "items" | "map") 
   };
 
   const analyzeAndGeneratePet = async () => {
+    if (isGenerating) return;
+
     if (!selectedBase || !selectedClothes || !selectedShoes || !selectedHeadwear || !selectedHandheld || !selectedAccessory) {
       setError("缺少 base 或素材圖片，請先完成 5 個素材收集。");
       return;
@@ -470,9 +448,6 @@ export const TodayView: React.FC<{ navigateTo: (tab: "today" | "items" | "map") 
     }
 
     setError(null);
-    setAnalysis(null);
-    setFinalPrompt("");
-    setNotionPromptContext("");
     setGeneratedImageUrl(null);
     setGeneratedPetProvider(null);
     setImgLoading(false);
@@ -480,59 +455,34 @@ export const TodayView: React.FC<{ navigateTo: (tab: "today" | "items" | "map") 
     setImgLoaded(false);
 
     try {
-      setIsAnalyzing(true);
-      const formData = new FormData();
-      await Promise.all([
-        appendImageAssetToFormData(formData, "base", selectedBase),
-        appendImageAssetToFormData(formData, "clothes", selectedClothes),
-        appendImageAssetToFormData(formData, "shoes", selectedShoes),
-        appendImageAssetToFormData(formData, "headwear", selectedHeadwear),
-        appendImageAssetToFormData(formData, "handheld", selectedHandheld),
-        appendImageAssetToFormData(formData, "accessory", selectedAccessory),
-      ]);
-      formData.append("mainGenre", mainGenre);
-      formData.append("subGenre", subGenre);
-
-      const analyzeResponse = await fetch("/api/analyze-assets", {
-        method: "POST",
-        body: formData,
-      });
-      const analyzeData = await readApiJsonResponse(analyzeResponse);
-      if (!analyzeResponse.ok || !analyzeData.analysis || typeof analyzeData.analysis !== "object") {
-        const message = typeof analyzeData.error === "string" ? analyzeData.error : "素材分析失敗，請重試";
-        throw new Error(message);
-      }
-
-      const parsedAnalysis = analyzeData.analysis as unknown as GeminiAssetAnalysis;
-      setAnalysis(parsedAnalysis);
-      setFinalPrompt(parsedAnalysis.final_prompt_en || "");
-      setNotionPromptContext(
-        analyzeData.notion && typeof analyzeData.notion === "object" && typeof (analyzeData.notion as Record<string, unknown>).promptContext === "string"
-          ? (((analyzeData.notion as Record<string, unknown>).promptContext as string) || "").trim()
-          : ""
-      );
-      setIsAnalyzing(false);
-
       setIsGenerating(true);
       setImgLoading(true);
-      const generateResponse = await fetch("/api/generate-pet", {
+      const generateResponse = await fetch("/api/generate-final-pet", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          analysis: parsedAnalysis,
+          baseImageUrl: selectedBase,
+          itemImageUrls: {
+            clothes: selectedClothes || undefined,
+            shoes: selectedShoes || undefined,
+            headwear: selectedHeadwear || undefined,
+            handheld: selectedHandheld || undefined,
+            accessory: selectedAccessory || undefined,
+          },
+          mainGenre,
+          subGenre,
         }),
       });
-
-      const generateData = await readApiJsonResponse(generateResponse);
-      if (!generateResponse.ok || typeof generateData.imageUrl !== "string" || !generateData.imageUrl) {
-        const message = typeof generateData.error === "string" ? generateData.error : "生成失敗，請重試";
+      const generateData = (await readApiJsonResponse(generateResponse)) as unknown as GenerateFinalPetResponse;
+      if (!generateResponse.ok || generateData.ok !== true || typeof generateData.imageUrl !== "string" || !generateData.imageUrl) {
+        const message = generateData.ok === false && typeof generateData.error === "string" ? generateData.error : "生成失敗，請重試";
         throw new Error(message);
       }
 
       setGeneratedImageUrl(generateData.imageUrl);
-      setGeneratedPetProvider("leonardo");
+      setGeneratedPetProvider("openai");
       try {
         localStorage.setItem(GENERATED_WEEKLY_PET_IMAGE_KEY, generateData.imageUrl);
       } catch {
@@ -565,7 +515,7 @@ export const TodayView: React.FC<{ navigateTo: (tab: "today" | "items" | "map") 
             day2HandheldKey: extractAssetKeyFromPath(selectedHandheld),
             day3AccessoryKey: extractAssetKeyFromPath(selectedAccessory),
             baseKey: currentBaseKey,
-            finalPrompt: parsedAnalysis.final_prompt_en || "",
+            finalPrompt: "",
             petImageUrl: generateData.imageUrl,
             status: "generated",
           }),
@@ -585,7 +535,6 @@ export const TodayView: React.FC<{ navigateTo: (tab: "today" | "items" | "map") 
       setImgLoadError(false);
       setImgLoaded(false);
     } finally {
-      setIsAnalyzing(false);
       setIsGenerating(false);
     }
   };
@@ -619,7 +568,7 @@ export const TodayView: React.FC<{ navigateTo: (tab: "today" | "items" | "map") 
       mainGenre,
       secondGenre: subGenre,
       items: collectedItems,
-      provider: generatedPetProvider || "leonardo",
+      provider: generatedPetProvider || "openai",
       sourceDay: safeDay,
       sourceDate: currentDayDate,
       top: 50 + (Math.random() - 0.5) * 10,
@@ -907,12 +856,12 @@ export const TodayView: React.FC<{ navigateTo: (tab: "today" | "items" | "map") 
       ) : null}
 
       {isPetGenerationStage ? (
-        <RetroWindow title="風格分析升級" tone="blue">
+        <RetroWindow title="最終寵物生成" tone="blue">
           <div className="window-stack-tight">
             <div className="window-title-row">
               <div>
                 <div className="window-mini-title">{mainGenre} 音樂精靈</div>
-                <p className="window-copy">深入分析你的音樂素材，解鎖更完整的最終寵物！</p>
+                <p className="window-copy">使用 base 與素材參考圖，生成完整的最終像素寵物。</p>
               </div>
               <div className="flex flex-wrap justify-end gap-2">
                 <PixelBadge tone="pink">主：{mainGenre}</PixelBadge>
@@ -937,40 +886,12 @@ export const TodayView: React.FC<{ navigateTo: (tab: "today" | "items" | "map") 
 
             {error ? <div className="window-error">{error}</div> : null}
 
-            {(isAnalyzing || analysis || finalPrompt) ? (
+            {isGenerating ? (
               <div className="analysis-result-window">
                 <div className="window-title-row">
-                  <div className="window-mini-title">素材分析結果</div>
-                  {isAnalyzing ? <div className="window-hint">正在分析素材…</div> : null}
+                  <div className="window-mini-title">最終寵物生成中</div>
                 </div>
-
-                {notionPromptContext ? (
-                  <div className="analysis-copy-block">
-                    <div className="window-label">Notion 風格參考</div>
-                    <div className="window-hint whitespace-pre-wrap">{notionPromptContext}</div>
-                  </div>
-                ) : null}
-
-                {analysis ? (
-                  <div className="analysis-copy-block">
-                    <div className="window-hint"><strong>Base：</strong>{analysis.base_description}</div>
-                    <div className="window-hint"><strong>Clothes：</strong>{analysis.clothes_description}</div>
-                    <div className="window-hint"><strong>Shoes：</strong>{analysis.shoes_description}</div>
-                    <div className="window-hint"><strong>Headwear：</strong>{analysis.headwear_description}</div>
-                    <div className="window-hint"><strong>Handheld：</strong>{analysis.handheld_description}</div>
-                    <div className="window-hint"><strong>Accessory：</strong>{analysis.accessory_description}</div>
-                    <div className="window-hint"><strong>Style：</strong>{analysis.style_summary}</div>
-                  </div>
-                ) : null}
-
-                {finalPrompt ? (
-                  <div className="analysis-copy-block">
-                    <div className="window-label">Gemini final_prompt_en</div>
-                    <pre className="analysis-prompt-block">{finalPrompt}</pre>
-                  </div>
-                ) : null}
-
-                {isGenerating ? <div className="window-hint">正在生成寵物…</div> : null}
+                {isGenerating ? <div className="window-hint">正在使用 OpenAI 生成寵物…</div> : null}
               </div>
             ) : null}
 
@@ -996,20 +917,20 @@ export const TodayView: React.FC<{ navigateTo: (tab: "today" | "items" | "map") 
                   />
                 </div>
                 {imgLoaded && !imgLoadError ? <div className="window-success">生成成功！</div> : null}
-                <Button variant="blue" className="w-full justify-center" onClick={analyzeAndGeneratePet} disabled={isAnalyzing || isGenerating}>
-                  {isAnalyzing ? "正在分析素材..." : isGenerating ? "正在生成寵物..." : "ANALYZE NOW"}
+                <Button variant="blue" className="w-full justify-center" onClick={analyzeAndGeneratePet} disabled={isGenerating}>
+                  {isGenerating ? "正在生成寵物..." : "GENERATE PET"}
                 </Button>
               </div>
             ) : (
-              <Button variant="blue" className="w-full justify-center" onClick={analyzeAndGeneratePet} disabled={isAnalyzing || isGenerating}>
-                {isAnalyzing ? "正在分析素材..." : isGenerating ? "正在生成寵物..." : "ANALYZE NOW"}
+              <Button variant="blue" className="w-full justify-center" onClick={analyzeAndGeneratePet} disabled={isGenerating}>
+                {isGenerating ? "正在生成寵物..." : "GENERATE PET"}
               </Button>
             )}
           </div>
         </RetroWindow>
       ) : null}
 
-      <Button variant="primary" className="w-full justify-center" onClick={handleDeployToMap} disabled={!generatedImageUrl || isAnalyzing || isGenerating}>
+      <Button variant="primary" className="w-full justify-center" onClick={handleDeployToMap} disabled={!generatedImageUrl || isGenerating}>
         OPEN MAP
       </Button>
 

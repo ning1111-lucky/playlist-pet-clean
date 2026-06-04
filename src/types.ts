@@ -135,6 +135,17 @@ export interface DailyMusicPayload {
   debug?: MusicFetchDebug | null;
 }
 
+export type GenerateFinalPetResponse =
+  | {
+      ok: true;
+      imageUrl: string;
+      provider: "openai";
+    }
+  | {
+      ok: false;
+      error: string;
+    };
+
 export interface GeminiAssetAnalysis {
   base_description: string;
   clothes_description: string;
