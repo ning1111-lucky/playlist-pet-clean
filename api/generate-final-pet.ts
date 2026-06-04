@@ -31,6 +31,11 @@ type OpenAIImageResponse = {
 };
 
 const DEFAULT_OPENAI_IMAGE_MODEL = process.env.OPENAI_IMAGE_MODEL || "gpt-image-2";
+const PUBLIC_ASSET_ORIGIN =
+  process.env.PUBLIC_ASSET_ORIGIN ||
+  process.env.VITE_PUBLIC_SITE_URL ||
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  "https://playlist-pet-clean.vercel.app";
 const CORE_PROMPT = `Create one finished polished pixel-art music pet character.
 
 Use the BASE IMAGE as the fixed character prototype.
@@ -95,9 +100,17 @@ function normalizeOptionalString(value: unknown): string {
 }
 
 function resolveImageUrl(req: ApiRequest, value: string): string {
-  if (/^data:/i.test(value)) return value;
-  if (/^https?:\/\//i.test(value)) return value;
-  return new URL(value, getRequestUrl(req)).toString();
+  const normalizedValue = String(value || "").trim();
+  if (!normalizedValue) return "";
+  if (/^data:image\//i.test(normalizedValue)) return normalizedValue;
+  if (/^https?:\/\//i.test(normalizedValue)) return normalizedValue;
+
+  const cleanOrigin = PUBLIC_ASSET_ORIGIN.replace(/\/$/, "");
+  if (cleanOrigin) {
+    return normalizedValue.startsWith("/") ? `${cleanOrigin}${normalizedValue}` : `${cleanOrigin}/${normalizedValue}`;
+  }
+
+  return new URL(normalizedValue, getRequestUrl(req)).toString();
 }
 
 function guessMimeType(url: string, fallback = "image/png") {
@@ -133,7 +146,7 @@ async function fetchImageAsBlob(req: ApiRequest, imageUrl: string, fieldName: st
 
   const response = await fetch(resolvedUrl);
   if (!response.ok) {
-    throw new Error(`Failed to fetch ${fieldName} image.`);
+    throw new Error(`Failed to fetch ${fieldName} image: ${resolvedUrl}`);
   }
 
   const arrayBuffer = await response.arrayBuffer();
