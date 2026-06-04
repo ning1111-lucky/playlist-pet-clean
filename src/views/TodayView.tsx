@@ -102,6 +102,36 @@ async function readApiJsonResponse(response: Response): Promise<Record<string, u
   };
 }
 
+async function imageSourceToDataUrl(source: string): Promise<string> {
+  if (!source) {
+    throw new Error("Missing image source");
+  }
+
+  if (source.startsWith("data:image/")) {
+    return source;
+  }
+
+  const response = await fetch(source);
+  if (!response.ok) {
+    throw new Error(`Failed to load image in browser: ${source}`);
+  }
+
+  const blob = await response.blob();
+
+  return await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === "string") {
+        resolve(reader.result);
+      } else {
+        reject(new Error("Failed to convert image to data URL"));
+      }
+    };
+    reader.onerror = () => reject(new Error("Failed to read image blob"));
+    reader.readAsDataURL(blob);
+  });
+}
+
 function extractAssetKeyFromPath(value: string | null | undefined): string {
   if (!value) return "";
   const cleanPath = value.split("?")[0] || "";
@@ -459,20 +489,23 @@ export const TodayView: React.FC<{ navigateTo: (tab: "today" | "items" | "map") 
     try {
       setIsGenerating(true);
       setImgLoading(true);
+      const baseImageDataUrl = await imageSourceToDataUrl(selectedBase);
+      const itemImageDataUrls = {
+        clothes: selectedClothes ? await imageSourceToDataUrl(selectedClothes) : undefined,
+        shoes: selectedShoes ? await imageSourceToDataUrl(selectedShoes) : undefined,
+        headwear: selectedHeadwear ? await imageSourceToDataUrl(selectedHeadwear) : undefined,
+        handheld: selectedHandheld ? await imageSourceToDataUrl(selectedHandheld) : undefined,
+        accessory: selectedAccessory ? await imageSourceToDataUrl(selectedAccessory) : undefined,
+      };
+
       const generateResponse = await fetch("/api/generate-final-pet", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          baseImageUrl: selectedBase,
-          itemImageUrls: {
-            clothes: selectedClothes || undefined,
-            shoes: selectedShoes || undefined,
-            headwear: selectedHeadwear || undefined,
-            handheld: selectedHandheld || undefined,
-            accessory: selectedAccessory || undefined,
-          },
+          baseImageUrl: baseImageDataUrl,
+          itemImageUrls: itemImageDataUrls,
           mainGenre,
           subGenre,
         }),

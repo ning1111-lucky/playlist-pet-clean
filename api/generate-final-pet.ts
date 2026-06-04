@@ -122,15 +122,15 @@ function guessMimeType(url: string, fallback = "image/png") {
   return fallback;
 }
 
-function dataUrlToBlob(dataUrl: string, fallbackFieldName: string) {
-  const match = /^data:([^;,]+)?(?:;charset=[^;,]+)?;base64,(.+)$/i.exec(dataUrl);
+function parseDataUrl(value: string, label: string) {
+  const match = value.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
   if (!match) {
-    throw new Error(`Invalid data URL for ${fallbackFieldName} image.`);
+    throw new Error(`Invalid ${label} data URL`);
   }
 
   const mimeType = match[1] || "image/png";
   const base64Data = match[2] || "";
-  const filename = `${fallbackFieldName}.${mimeType.includes("jpeg") ? "jpg" : mimeType.includes("webp") ? "webp" : "png"}`;
+  const filename = `${label}.${mimeType.includes("jpeg") ? "jpg" : mimeType.includes("webp") ? "webp" : "png"}`;
 
   return {
     blob: new Blob([Buffer.from(base64Data, "base64")], { type: mimeType }),
@@ -140,8 +140,8 @@ function dataUrlToBlob(dataUrl: string, fallbackFieldName: string) {
 
 async function fetchImageAsBlob(req: ApiRequest, imageUrl: string, fieldName: string) {
   const resolvedUrl = resolveImageUrl(req, imageUrl);
-  if (/^data:/i.test(resolvedUrl)) {
-    return dataUrlToBlob(resolvedUrl, fieldName);
+  if (/^data:image\//i.test(resolvedUrl)) {
+    return parseDataUrl(resolvedUrl, fieldName);
   }
 
   const response = await fetch(resolvedUrl);
