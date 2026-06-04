@@ -1523,24 +1523,24 @@ html, body, #root {
 }
 
 .login-home-shell .mobile-bottom-nav {
-  height: 74px;
-  padding: 6px 12px;
+  height: 78px;
+  padding: 8px 12px;
   border-radius: 22px 22px 0 0;
   z-index: 40;
 }
 
 .login-home-shell .modern-tab-icon {
-  width: 52px;
-  height: 52px;
+  width: 56px;
+  height: 56px;
 }
 
 .login-home-shell .modern-tab-icon-image {
-  width: 26px;
-  height: 26px;
+  width: 30px;
+  height: 30px;
 }
 
 .login-home-shell .pixel-nav-tab-label {
-  font-size: 12px;
+  font-size: 15px;
 }
 
 .pixel-status-bar {
@@ -1879,15 +1879,15 @@ html, body, #root {
 
 .home-status-bar {
   position: absolute;
-  top: 18px;
-  left: 18px;
-  right: 18px;
+  top: 14px;
+  left: 14px;
+  right: 14px;
   z-index: 30;
 }
 
 .pixel-status-bar.home-status-bar {
-  min-height: 50px;
-  padding: 0 12px;
+  min-height: 58px;
+  padding: 0 14px;
   border: 4px solid #050505;
   border-radius: 18px;
   background: #0b376f;
@@ -1901,8 +1901,8 @@ html, body, #root {
 }
 
 .status-avatar {
-  width: 34px;
-  height: 34px;
+  width: 42px;
+  height: 42px;
   display: grid;
   place-items: center;
   border: 3px solid #050505;
@@ -1911,8 +1911,8 @@ html, body, #root {
 }
 
 .status-avatar-image {
-  width: 30px;
-  height: 30px;
+  width: 36px;
+  height: 36px;
   object-fit: contain;
   image-rendering: pixelated;
 }
@@ -1920,20 +1920,20 @@ html, body, #root {
 .status-level-stack {
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  min-width: 118px;
+  gap: 4px;
+  min-width: 136px;
 }
 
 .status-level-label {
   color: #fff;
   font-family: "Silkscreen", "Inter", system-ui, sans-serif;
-  font-size: 11px;
+  font-size: 15px;
   letter-spacing: 0.04em;
 }
 
 .status-xp-track {
-  width: 92px;
-  height: 7px;
+  width: 105px;
+  height: 9px;
   border: 2px solid #111;
   border-radius: 999px;
   background: #f8f8f4;
@@ -1951,33 +1951,33 @@ html, body, #root {
 .status-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .status-gem-chip {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  height: 34px;
-  padding: 0 10px;
+  gap: 6px;
+  height: 40px;
+  padding: 0 12px;
   border: 3px solid #050505;
   border-radius: 8px;
   background: #092754;
   color: #fff;
   font-family: "Silkscreen", "Inter", system-ui, sans-serif;
-  font-size: 11px;
+  font-size: 15px;
 }
 
 .status-gem-image {
-  width: 22px;
-  height: 22px;
+  width: 28px;
+  height: 28px;
   object-fit: contain;
   image-rendering: pixelated;
 }
 
 .status-action-button {
-  width: 24px;
-  height: 24px;
+  width: 30px;
+  height: 30px;
   display: grid;
   place-items: center;
   border: 0;
@@ -1989,8 +1989,8 @@ html, body, #root {
 }
 
 .status-action-image {
-  width: 24px;
-  height: 24px;
+  width: 30px;
+  height: 30px;
   object-fit: contain;
   image-rendering: pixelated;
 }
@@ -2007,7 +2007,7 @@ html, body, #root {
 }
 
 .home-logo-image {
-  width: 250px;
+  width: 315px;
   height: auto;
   display: block;
   margin: 0 auto;
@@ -2019,7 +2019,7 @@ html, body, #root {
   position: static;
   margin-top: 8px;
   padding: 0 20px;
-  font-size: 13px;
+  font-size: 17px;
   font-weight: 900;
   color: #fff;
   line-height: 1.3;
@@ -2029,10 +2029,10 @@ html, body, #root {
 
 .home-stage {
   position: absolute;
-  top: 215px;
+  top: 245px;
   left: 0;
   right: 0;
-  height: 210px;
+  height: 230px;
   z-index: 12;
   pointer-events: none;
 }
@@ -2047,24 +2047,24 @@ html, body, #root {
 .stage-egg {
   top: 0;
   left: 50%;
-  width: 145px;
+  width: 155px;
   height: auto;
   transform: translateX(-50%);
   z-index: 2;
 }
 
 .stage-pet-pink {
-  left: 44px;
+  left: 36px;
   top: 92px;
-  width: 96px;
+  width: 112px;
   height: auto;
   z-index: 3;
 }
 
 .stage-pet-blue {
-  right: 44px;
+  right: 36px;
   top: 92px;
-  width: 96px;
+  width: 112px;
   height: auto;
   z-index: 3;
 }
@@ -2081,9 +2081,9 @@ html, body, #root {
   position: absolute;
   left: 22px;
   right: 22px;
-  bottom: 112px;
-  z-index: 10;
-  height: 152px;
+  bottom: 108px;
+  z-index: 20;
+  height: 215px;
   border: 3px solid #111;
   border-radius: 18px;
   background: linear-gradient(180deg, #fffaf3 0%, #fff6ea 100%);
@@ -2094,8 +2094,8 @@ html, body, #root {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 26px;
-  padding: 4px 10px;
+  min-height: 34px;
+  padding: 4px 14px 4px 16px;
   border-bottom: 3px solid #111;
   background: linear-gradient(180deg, #ff5fb0 0%, #ff3f98 100%);
   border-radius: 14px 14px 0 0;
@@ -2103,7 +2103,7 @@ html, body, #root {
 
 .home-start-window-title {
   font-family: "Silkscreen", "Inter", system-ui, sans-serif;
-  font-size: 12px;
+  font-size: 17px;
   color: #fff;
   letter-spacing: 0.04em;
 }
@@ -2115,8 +2115,8 @@ html, body, #root {
 }
 
 .home-start-window-controls span {
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
   border: 2px solid #111;
   background: #ffe779;
   box-shadow: 1px 1px 0 #111;
@@ -2126,16 +2126,16 @@ html, body, #root {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  gap: 8px;
-  padding: 10px 16px 6px;
-  height: calc(100% - 26px);
+  gap: 10px;
+  padding: 18px 20px 14px;
+  height: calc(100% - 34px);
   box-sizing: border-box;
 }
 
 .home-start-copy {
   margin: 0;
   font-weight: 800;
-  font-size: 12px;
+  font-size: 17px;
   line-height: 1.45;
   text-align: left;
 }
@@ -2145,8 +2145,8 @@ html, body, #root {
 }
 
 .home-start-copy-icon-image {
-  width: 20px;
-  height: 20px;
+  width: 28px;
+  height: 28px;
   object-fit: contain;
   image-rendering: pixelated;
   margin-top: 2px;
@@ -2160,9 +2160,9 @@ html, body, #root {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 180px;
+  width: 260px;
   height: auto;
-  margin: 8px auto 0;
+  margin: 14px auto 0;
   padding: 0;
   border: 0;
   background: transparent;
@@ -2171,7 +2171,7 @@ html, body, #root {
 }
 
 .home-start-button-image {
-  width: 170px;
+  width: 255px;
   height: auto;
   display: block;
   image-rendering: pixelated;
@@ -2309,13 +2309,13 @@ html, body, #root {
 @media (max-width: 480px) {
   .home-start-scene {
     min-height: 760px;
-    padding-bottom: 96px;
+    padding-bottom: 104px;
   }
 
   .home-status-bar {
-    top: 18px;
-    left: 18px;
-    right: 18px;
+    top: 14px;
+    left: 14px;
+    right: 14px;
   }
 
   .home-logo-area {
@@ -2323,37 +2323,37 @@ html, body, #root {
   }
 
   .home-logo-image {
-    width: 250px;
+    width: 315px;
   }
 
   .home-logo-subtitle {
-    font-size: 13px;
+    font-size: 17px;
   }
 
   .home-stage {
-    top: 215px;
-    height: 210px;
+    top: 245px;
+    height: 230px;
   }
 
   .stage-egg {
-    width: 145px;
+    width: 155px;
   }
 
   .stage-pet-pink {
-    left: 44px;
-    width: 96px;
+    left: 36px;
+    width: 112px;
   }
 
   .stage-pet-blue {
-    right: 44px;
-    width: 96px;
+    right: 36px;
+    width: 112px;
   }
 
   .home-start-window {
     left: 22px;
     right: 22px;
-    bottom: 112px;
-    height: 152px;
+    bottom: 108px;
+    height: 215px;
   }
 
   .source-window-card-head {
