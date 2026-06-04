@@ -1523,25 +1523,48 @@ html, body, #root {
 }
 
 .login-home-shell .mobile-bottom-nav {
-  height: 82px;
-  padding: 8px 12px;
-  border-radius: 22px 22px 0 0;
+  height: 88px;
+  padding: 8px 16px 10px;
+  border-radius: 24px 24px 0 0;
   z-index: 40;
 }
 
+.login-home-shell .pixel-nav-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
 .login-home-shell .modern-tab-icon {
-  width: 60px;
-  height: 60px;
+  width: 66px;
+  height: 58px;
+  border-radius: 18px;
 }
 
 .login-home-shell .modern-tab-icon-image {
-  width: 34px;
-  height: 34px;
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
 }
 
 .login-home-shell .pixel-nav-tab-label {
   font-size: 15px;
+  font-weight: 700;
   line-height: 1;
+  color: #ffffff;
+}
+
+.login-home-shell .pixel-nav-tab-active .modern-tab-icon {
+  width: 70px;
+  height: 62px;
+  background: #ff4fa3;
+  border: 3px solid #050505;
+}
+
+.login-home-shell .pixel-nav-tab-active .pixel-nav-tab-label {
+  color: #ffffff;
 }
 
 .pixel-status-bar {
