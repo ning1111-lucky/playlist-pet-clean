@@ -152,7 +152,11 @@ function HomeScreen({ onStart }: { onStart: () => void }) {
             <div className="home-start-copy-row">
               <img src={HOME_ASSETS.musicNote} alt="" className="home-start-copy-icon-image" />
               <p className="window-copy home-start-copy">
-                連結你的音樂帳號，讓 <strong>Playlist Pet</strong> 開始認識你的音樂宇宙！
+                連結你的音樂帳號，
+                <br />
+                讓 <strong>Playlist Pet</strong>
+                <br />
+                開始認識你的音樂宇宙！
               </p>
             </div>
             <div className="home-start-copy-divider" aria-hidden="true" />

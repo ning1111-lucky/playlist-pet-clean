@@ -2184,28 +2184,31 @@ html, body, #root {
   filter: drop-shadow(4px 4px 0 rgba(17, 17, 17, 0.28));
 }
 
-.home-start-window {
+.login-home-shell .home-start-window {
   position: absolute;
   left: 22px;
   right: 22px;
-  bottom: 112px;
+  bottom: 106px;
   z-index: 20;
-  height: 170px;
-  border: 3px solid #111;
+  height: 205px;
+  border: 4px solid #050505;
   border-radius: 18px;
-  background: linear-gradient(180deg, #fffaf3 0%, #fff6ea 100%);
-  box-shadow: 4px 4px 0 #111;
+  overflow: hidden;
+  background: #fff8ea;
+  box-shadow: 0 5px 0 #050505;
 }
 
-.home-start-window-bar {
+.login-home-shell .home-start-window-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 34px;
-  padding: 4px 14px 4px 16px;
-  border-bottom: 3px solid #111;
-  background: linear-gradient(180deg, #ff5fb0 0%, #ff3f98 100%);
-  border-radius: 14px 14px 0 0;
+  height: 34px;
+  padding: 0 14px;
+  border-bottom: 4px solid #050505;
+  background: #ff4fa3;
+  font-size: 16px;
+  font-weight: 800;
+  color: #ffffff;
 }
 
 .home-start-window-title {
@@ -2229,14 +2232,18 @@ html, body, #root {
   box-shadow: 1px 1px 0 #111;
 }
 
-.home-start-window-body {
+.login-home-shell .home-start-window-body {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   gap: 10px;
-  padding: 18px 20px 14px;
+  position: relative;
+  padding: 14px 18px 12px;
   height: calc(100% - 34px);
   box-sizing: border-box;
+  font-size: 16px;
+  line-height: 1.45;
+  color: #111111;
 }
 
 .home-start-copy {
@@ -2263,13 +2270,13 @@ html, body, #root {
   border-top: 2px dashed rgba(17, 17, 17, 0.22);
 }
 
-.home-start-button {
+.login-home-shell .home-start-button {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 260px;
+  width: 245px;
   height: auto;
-  margin: 14px auto 0;
+  margin: 12px auto 0;
   padding: 0;
   border: 0;
   background: transparent;
@@ -2277,8 +2284,8 @@ html, body, #root {
   cursor: pointer;
 }
 
-.home-start-button-image {
-  width: 255px;
+.login-home-shell .home-start-button-image {
+  width: 240px;
   height: auto;
   display: block;
   image-rendering: pixelated;
@@ -2470,6 +2477,13 @@ html, body, #root {
     right: 22px;
     bottom: 112px;
     height: 170px;
+  }
+
+  .login-home-shell .home-start-window {
+    left: 22px;
+    right: 22px;
+    bottom: 106px;
+    height: 205px;
   }
 
   .source-window-card-head {
