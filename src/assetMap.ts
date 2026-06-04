@@ -1,3 +1,5 @@
+import type { Genre } from "./types";
+
 // 未來 PNG assets 將取代 PixelItemPlaceholder
 // This asset map reserves space for future PNG overlays.
 
@@ -19,34 +21,83 @@ export function getRandomBaseKey(): BaseKey {
   return BASE_KEYS[Math.floor(Math.random() * BASE_KEYS.length)];
 }
 
+export const FALLBACK_ASSET_GENRES: Genre[] = [
+  "Classical",
+  "Country",
+  "EDM",
+  "Hiphop",
+  "Indie",
+  "Jazz",
+  "Kpop",
+  "Pop",
+  "RnB",
+  "Rock",
+];
+
 function normalizeAssetGenreKey(genre: string | null | undefined) {
-  return typeof genre === "string" ? genre.trim() : "";
+  if (typeof genre !== "string") return "";
+
+  const trimmed = genre.trim();
+  const genreMap: Record<string, string> = {
+    "K-pop": "Kpop",
+    KPOP: "Kpop",
+    kpop: "Kpop",
+    "R&B": "RnB",
+    RNB: "RnB",
+    rnb: "RnB",
+    "Hip-hop": "Hiphop",
+    HIPHOP: "Hiphop",
+    hiphop: "Hiphop",
+    "Taiwan Indie": "Indie",
+    INDIE: "Indie",
+    indie: "Indie",
+    POP: "Pop",
+    pop: "Pop",
+    ROCK: "Rock",
+    rock: "Rock",
+    JAZZ: "Jazz",
+    jazz: "Jazz",
+    COUNTRY: "Country",
+    country: "Country",
+    CLASSICAL: "Classical",
+    classical: "Classical",
+    edm: "EDM",
+    Mixed: "Mixed",
+    Hidden: "Hidden",
+  };
+
+  return genreMap[trimmed] || trimmed;
 }
 
-export function getSafeAssetGenre(primary?: string | null, fallback?: string | null) {
+export function stableHash(input: string): number {
+  let hash = 0;
+  for (let index = 0; index < input.length; index += 1) {
+    hash = (hash * 31 + input.charCodeAt(index)) >>> 0;
+  }
+  return hash;
+}
+
+export function isUsableAssetGenre(genre?: string | null): boolean {
+  const normalizedGenre = normalizeAssetGenreKey(genre);
+  if (!normalizedGenre) return false;
+  return normalizedGenre !== "Hidden" && normalizedGenre !== "Mixed";
+}
+
+export function getRotatingFallbackGenre(seed: string): Genre {
+  const safeSeed = seed || "default";
+  const index = stableHash(safeSeed) % FALLBACK_ASSET_GENRES.length;
+  return FALLBACK_ASSET_GENRES[index];
+}
+
+export function getSafeAssetGenre(primary?: string | null, fallback?: string | null, seed?: string): Genre {
   const primaryGenre = normalizeAssetGenreKey(primary);
-  if (primaryGenre && primaryGenre !== "Hidden" && primaryGenre !== "Mixed") return primaryGenre;
+  if (isUsableAssetGenre(primaryGenre)) return primaryGenre as Genre;
 
   const fallbackGenre = normalizeAssetGenreKey(fallback);
-  if (fallbackGenre && fallbackGenre !== "Hidden" && fallbackGenre !== "Mixed") return fallbackGenre;
+  if (isUsableAssetGenre(fallbackGenre)) return fallbackGenre as Genre;
 
-  return "Pop";
+  return getRotatingFallbackGenre(seed || `${primaryGenre}:${fallbackGenre}:default`);
 }
-
-const variantAssetMap: Record<string, Partial<Record<string, string[]>>> = {
-  Indie: {
-    clothes: ["/INDIE-clothes-A.png", "/INDIE-clothes-B.png"],
-    headwear: ["/INDIE-headwear-A.png", "/INDIE-headwear-B.png"],
-    shoes: ["/INDIE-shoes-A.png", "/INDIE-shoes-B.png"],
-    enhance: ["/INDIE-enhance-A.png", "/INDIE-enhance-B.png"]
-  },
-  "Taiwan Indie": {
-    clothes: ["/INDIE-clothes-A.png", "/INDIE-clothes-B.png"],
-    headwear: ["/INDIE-headwear-A.png", "/INDIE-headwear-B.png"],
-    shoes: ["/INDIE-shoes-A.png", "/INDIE-shoes-B.png"],
-    enhance: ["/INDIE-enhance-A.png", "/INDIE-enhance-B.png"]
-  }
-};
 
 const legacyAssetPathMap: Record<string, string[]> = {
   "Indie:clothes": ["/INDIE-clothes.png", "/INDIE-clothes-A.png", "/INDIE-clothes-B.png"],
@@ -68,39 +119,22 @@ function getSeededIndex(seed: string, length: number) {
 }
 
 export function resolveAssetImage(genre: string, part: string, seed?: string) {
-  const safeGenre = getSafeAssetGenre(genre);
-  const variants = variantAssetMap[safeGenre]?.[part];
-  if (variants && variants.length > 0) {
-    if (!seed) {
-      return variants[Math.floor(Math.random() * variants.length)];
-    }
-    return variants[getSeededIndex(seed, variants.length)];
-  }
-
+  const safeGenre = getSafeAssetGenre(genre, null, seed || `${genre}:${part}`);
   return assetMap[safeGenre]?.[part] || null;
 }
 
 export function getAssetErrorFallback(genre: string, part: string, currentSrc: string | null | undefined, seed?: string) {
-  const safeGenre = getSafeAssetGenre(genre);
-  const variants = variantAssetMap[safeGenre]?.[part] || [];
   const preferred = resolveAssetImage(genre, part, seed);
 
   if (preferred && preferred !== currentSrc) {
     return preferred;
   }
 
-  if (variants.length > 1 && currentSrc) {
-    const alternative = variants.find((variant) => variant !== currentSrc);
-    if (alternative) {
-      return alternative;
-    }
-  }
-
   return null;
 }
 
 export function normalizeStoredAssetImage(genre: string, part: string, imageSrc: string | null | undefined, seed?: string) {
-  const safeGenre = getSafeAssetGenre(genre);
+  const safeGenre = getSafeAssetGenre(genre, null, seed || `${genre}:${part}`);
   const legacyPaths = legacyAssetPathMap[`${safeGenre}:${part}`];
   if (legacyPaths && (!imageSrc || legacyPaths.includes(imageSrc))) {
     return resolveAssetImage(safeGenre, part, seed);
@@ -211,20 +245,20 @@ export const assetMap: Record<string, Record<string, string | null>> = {
     enhance: "/JAZZ-enhance.png"
   },
   Indie: {
-    clothes: "/INDIE-clothes-A.png",
-    headwear: "/INDIE-headwear-A.png",
+    clothes: "/INDIE-clothes.png",
+    headwear: "/INDIE-headwear.png",
     accessory: "/INDIE-accessory.png",
     handheld: "/INDIE-handheld.png",
-    shoes: "/INDIE-shoes-A.png",
-    enhance: "/INDIE-enhance-A.png"
+    shoes: "/INDIE-shoes.png",
+    enhance: "/INDIE-enhance.png"
   },
   "Taiwan Indie": {
-    clothes: "/INDIE-clothes-A.png",
-    headwear: "/INDIE-headwear-A.png",
+    clothes: "/INDIE-clothes.png",
+    headwear: "/INDIE-headwear.png",
     accessory: "/INDIE-accessory.png",
     handheld: "/INDIE-handheld.png",
-    shoes: "/INDIE-shoes-A.png",
-    enhance: "/INDIE-enhance-A.png"
+    shoes: "/INDIE-shoes.png",
+    enhance: "/INDIE-enhance.png"
   },
   Hiphop: {
     clothes: "/HIPHOP-clothes.png",

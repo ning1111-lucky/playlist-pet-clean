@@ -261,10 +261,12 @@ export const TodayView: React.FC<{ navigateTo: (tab: "today" | "items" | "map") 
   const daySlotConfigs = getDaySlotConfigs(safeDay);
   const activeMusicProvider = "lastfm";
   const distribution = Array.isArray(mockMusic?.distribution) ? mockMusic.distribution : [];
-  const rawPrimaryGenre = normalizeGenre((mockMusic?.assetGenre || mockMusic?.mainGenre || "Pop") as string) as Genre;
-  const rawSecondaryGenre = normalizeGenre((mockMusic?.subGenre || rawPrimaryGenre || "Pop") as string) as Genre;
-  const primarySuggestedGenre = getSafeAssetGenre(rawPrimaryGenre, rawSecondaryGenre) as Genre;
-  const secondarySuggestedGenre = getSafeAssetGenre(rawSecondaryGenre, primarySuggestedGenre) as Genre;
+  const rawPrimaryGenre = normalizeGenre((mockMusic?.assetGenre || mockMusic?.mainGenre || "") as string) as Genre;
+  const rawSecondaryGenre = normalizeGenre((mockMusic?.subGenre || rawPrimaryGenre || "") as string) as Genre;
+  const primaryFallbackSeed = `${hatchSession?.sessionId || "no-session"}-${currentDayDate}-main`;
+  const secondaryFallbackSeed = `${hatchSession?.sessionId || "no-session"}-${currentDayDate}-secondary`;
+  const primarySuggestedGenre = getSafeAssetGenre(rawPrimaryGenre, rawSecondaryGenre, primaryFallbackSeed) as Genre;
+  const secondarySuggestedGenre = getSafeAssetGenre(rawSecondaryGenre, rawPrimaryGenre, secondaryFallbackSeed) as Genre;
 
   const getCollectedItemByPart = (part: string) => {
     const index = getCollectionSlotIndex(part as MusicItem["part"]);
@@ -272,7 +274,12 @@ export const TodayView: React.FC<{ navigateTo: (tab: "today" | "items" | "map") 
   };
 
   const todaysPreviewItems = daySlotConfigs.map((slot, index) => {
-    const genre = (slot.genreSource === "main" ? primarySuggestedGenre : secondarySuggestedGenre) as Genre;
+    const seed = `${hatchSession?.sessionId || "no-session"}-${currentDayDate}-${slot.part}`;
+    const genre = getSafeAssetGenre(
+      slot.genreSource === "main" ? rawPrimaryGenre : rawSecondaryGenre,
+      slot.genreSource === "main" ? rawSecondaryGenre : rawPrimaryGenre,
+      seed
+    ) as Genre;
     return {
       id: `${safeDay}-${slot.part}-${index}`,
       day: safeDay,
@@ -979,9 +986,22 @@ export const TodayView: React.FC<{ navigateTo: (tab: "today" | "items" | "map") 
           <div className="window-stack-tight">
             <div className="window-hint"><strong>startDate:</strong> {hatchSession?.startDate || "-"}</div>
             <div className="window-hint"><strong>currentDay:</strong> {hatchSession?.currentDay || safeDay}</div>
+            <div className="window-hint"><strong>raw mainGenre:</strong> {rawPrimaryGenre || "-"}</div>
+            <div className="window-hint"><strong>raw subGenre:</strong> {rawSecondaryGenre || "-"}</div>
+            <div className="window-hint"><strong>safe asset mainGenre:</strong> {primarySuggestedGenre}</div>
+            <div className="window-hint"><strong>safe asset subGenre:</strong> {secondarySuggestedGenre}</div>
+            <div className="window-hint"><strong>fallback seed main:</strong> {primaryFallbackSeed}</div>
+            <div className="window-hint"><strong>fallback seed sub:</strong> {secondaryFallbackSeed}</div>
             <div className="window-hint"><strong>dayStart:</strong> {musicFetchDebug?.dayStartISO || currentDayDate}</div>
             <div className="window-hint"><strong>dayEnd:</strong> {musicFetchDebug?.dayEndISO || nextDayDate}</div>
             <div className="window-hint"><strong>apiTrackCount:</strong> {musicFetchDebug?.parsedTrackCount ?? 0} ({musicFetchDebug?.source || activeMusicProvider})</div>
+            <div className="space-y-1">
+              {todaysPreviewItems.map((item) => (
+                <div key={`${item.part}-${item.id}`} className="window-hint">
+                  preview {item.part}: {item.genre} / {item.imageSrc || "-"}
+                </div>
+              ))}
+            </div>
             <div className="space-y-1">
               {debugDaySummaries.map((summary) => (
                 <div key={summary.day} className="window-hint flex items-center justify-between gap-2">

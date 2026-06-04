@@ -220,10 +220,11 @@ function normalizeMusicItem(value: unknown, fallbackDay: DayIndex, fallbackDate?
 
   const day = clampDayIndex(value.sourceDay ?? value.day ?? fallbackDay);
   const rawGenre = normalizeGenre(value.genre);
-  const genre = getSafeAssetGenre(rawGenre) as Genre;
   const part = normalizePart(value.part);
   const id = typeof value.id === "string" && value.id ? value.id : generateId();
   const sourceDate = typeof value.sourceDate === "string" && value.sourceDate ? value.sourceDate : fallbackDate || "";
+  const genreSeed = `${id}-${sourceDate || fallbackDate || "no-date"}-${part}`;
+  const genre = getSafeAssetGenre(rawGenre, null, genreSeed) as Genre;
   const rawLabel = typeof value.label === "string" ? value.label.trim() : "";
 
   return {
@@ -745,14 +746,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       session.days[dayIndex].analysis = payload.data;
       session.days[dayIndex].tracks = dedupeTracks(payload.tracks);
 
-      const mainGenre = normalizeGenre(payload.data.assetGenre || payload.data.mainGenre);
-      const secondaryGenre = normalizeGenre(payload.data.subGenre || mainGenre);
-      const mainAssetGenre = getSafeAssetGenre(mainGenre, secondaryGenre) as Genre;
-      const secondaryAssetGenre = getSafeAssetGenre(secondaryGenre, mainGenre) as Genre;
+      const rawMainGenre = normalizeGenre(payload.data.assetGenre || payload.data.mainGenre);
+      const rawSecondaryGenre = normalizeGenre(payload.data.subGenre || rawMainGenre);
       const items: MusicItem[] = [];
 
       getDaySlotConfigs(dayIndex).forEach((slot, slotIndex) => {
-        const itemGenre = slot.genreSource === "main" ? mainAssetGenre : secondaryAssetGenre;
+        const seed = `${session.sessionId}-${dayStart}-${slot.part}`;
+        const itemGenre = getSafeAssetGenre(
+          slot.genreSource === "main" ? rawMainGenre : rawSecondaryGenre,
+          slot.genreSource === "main" ? rawSecondaryGenre : rawMainGenre,
+          seed
+        ) as Genre;
         items.push({
           id: `${dayIndex}-${slot.part}-${slotIndex}-${Math.random().toString(36).slice(2)}`,
           day: dayIndex,
