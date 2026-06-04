@@ -24,7 +24,13 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
   }
 
   handleReset = () => {
-    localStorage.clear();
+    try {
+      localStorage.removeItem("melody_app_state");
+      localStorage.removeItem("generatedWeeklyPetImage");
+      localStorage.removeItem("lastfmUsername");
+    } catch {
+      // Ignore storage cleanup failures and continue reset flow.
+    }
     sessionStorage.clear();
     window.location.reload();
   };

@@ -62,6 +62,9 @@ interface AppContextType extends AppState {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 const STORAGE_KEY = "melody_app_state";
+const GENERATED_WEEKLY_PET_IMAGE_KEY = "generatedWeeklyPetImage";
+const LASTFM_USERNAME_STORAGE_KEY = "lastfmUsername";
+const STORAGE_VERSION = 3;
 const DAY_INDEXES: DayIndex[] = [1, 2, 3];
 const INITIAL_ITEMS = Array.from({ length: COLLECTION_ITEM_PARTS.length }, () => null) as (MusicItem | null)[];
 const VALID_GENRES: Genre[] = ["Pop", "Hip-hop", "Hiphop", "K-pop", "Kpop", "EDM", "Classical", "Jazz", "R&B", "RnB", "Country", "Rock", "Taiwan Indie", "Indie", "Mixed", "Hidden"];
@@ -190,6 +193,28 @@ function dedupeTracks(tracks: TrackRecord[]) {
   return Array.from(trackMap.values()).sort((a, b) => new Date(a.playedAt).getTime() - new Date(b.playedAt).getTime());
 }
 
+function normalizeDailyMusicData(value: unknown): DailyMusicData | null {
+  if (!isRecord(value)) return null;
+  if (!Array.isArray(value.distribution)) return null;
+
+  return {
+    songCount: Number.isFinite(Number(value.songCount)) ? Number(value.songCount) : 0,
+    mainGenre: normalizeGenre(value.mainGenre),
+    subGenre: normalizeGenre(value.subGenre),
+    assetGenre: value.assetGenre !== undefined ? normalizeGenre(value.assetGenre) : undefined,
+    distribution: value.distribution
+      .map((entry) => {
+        if (!isRecord(entry)) return null;
+        return {
+          genre: normalizeGenre(entry.genre),
+          percentage: Number.isFinite(Number(entry.percentage)) ? Number(entry.percentage) : 0,
+        };
+      })
+      .filter((entry): entry is { genre: Genre; percentage: number } => Boolean(entry)),
+    quote: typeof value.quote === "string" ? value.quote : "",
+  };
+}
+
 function normalizeMusicItem(value: unknown, fallbackDay: DayIndex, fallbackDate?: string): MusicItem | null {
   if (!isRecord(value)) return null;
 
@@ -260,7 +285,7 @@ function normalizeHatchDayState(value: unknown, fallbackDate: string, dayIndex: 
   return {
     date,
     tracks: dedupeTracks(tracks),
-    analysis: isRecord(value.analysis) ? (value.analysis as DailyMusicData) : null,
+    analysis: normalizeDailyMusicData(value.analysis),
     items,
     completed: typeof value.completed === "boolean" ? value.completed || completed : completed,
   };
@@ -309,12 +334,23 @@ function buildDailyHistory(session: HatchSession): MusicItem[] {
 
 function hydrateState(base: Omit<AppState, "currentMockDay" | "currentWeekItems" | "dailyHistory">): AppState {
   const normalizedSession = normalizeHatchSession(base.hatchSession);
+  const normalizedWeeklyPets = (Array.isArray(base.weeklyPets) ? base.weeklyPets : [])
+    .map(normalizePet)
+    .filter((pet): pet is Pet => Boolean(pet));
+  const normalizedMapEntries = (Array.isArray(base.mapEntries) ? base.mapEntries : [])
+    .map(normalizeMapEntry)
+    .filter((entry): entry is MapEntry => Boolean(entry))
+    .filter((entry) => !MOCK_MAP_ENTRIES.some((mockEntry) => mockEntry.id === entry.id));
+
   return {
     ...base,
+    userProfile: base.userProfile || null,
     hatchSession: normalizedSession,
     currentMockDay: normalizedSession.currentDay,
     currentWeekItems: buildCurrentWeekItems(normalizedSession),
     dailyHistory: buildDailyHistory(normalizedSession),
+    weeklyPets: normalizedWeeklyPets,
+    mapEntries: normalizedMapEntries,
   };
 }
 
@@ -449,43 +485,75 @@ function getDefaultState(): AppState {
   });
 }
 
+function clearPersistedAppStorage() {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(GENERATED_WEEKLY_PET_IMAGE_KEY);
+    localStorage.removeItem(LASTFM_USERNAME_STORAGE_KEY);
+  } catch {
+    // Ignore storage cleanup failures during recovery.
+  }
+}
+
 function loadStoredState(): AppState {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (!stored) return getDefaultState();
 
     const parsed = JSON.parse(stored);
-    if (!isRecord(parsed)) return getDefaultState();
+    if (!isRecord(parsed)) {
+      clearPersistedAppStorage();
+      return getDefaultState();
+    }
 
-    const safeMapEntries = (Array.isArray(parsed.mapEntries) ? parsed.mapEntries : [])
-      .map(normalizeMapEntry)
-      .filter((entry): entry is MapEntry => Boolean(entry))
-      .filter((entry) => !MOCK_MAP_ENTRIES.some((mockEntry) => mockEntry.id === entry.id));
+    if (parsed.version === undefined) {
+      clearPersistedAppStorage();
+      return getDefaultState();
+    }
 
+    if (parsed.version !== STORAGE_VERSION) {
+      clearPersistedAppStorage();
+      return getDefaultState();
+    }
+
+    if (!isRecord(parsed.state)) {
+      clearPersistedAppStorage();
+      return getDefaultState();
+    }
+
+    const persistedState = parsed.state;
     const baseState = {
-      userProfile: isRecord(parsed.userProfile)
+      userProfile: isRecord(persistedState.userProfile)
         ? {
-            name: typeof parsed.userProfile.name === "string" ? parsed.userProfile.name : "",
-            email: typeof parsed.userProfile.email === "string" ? parsed.userProfile.email : "",
-            country: typeof parsed.userProfile.country === "string" && parsed.userProfile.country ? parsed.userProfile.country : "Taiwan",
-            city: typeof parsed.userProfile.city === "string" && parsed.userProfile.city ? parsed.userProfile.city : "Taipei",
-            style: typeof parsed.userProfile.style === "string" ? parsed.userProfile.style : undefined,
-            musicProvider: "lastfm",
-            lastfmUsername: typeof parsed.userProfile.lastfmUsername === "string" ? parsed.userProfile.lastfmUsername : undefined,
-            agreed: Boolean(parsed.userProfile.agreed),
+            name: typeof persistedState.userProfile.name === "string" ? persistedState.userProfile.name : "",
+            email: typeof persistedState.userProfile.email === "string" ? persistedState.userProfile.email : "",
+            country:
+              typeof persistedState.userProfile.country === "string" && persistedState.userProfile.country
+                ? persistedState.userProfile.country
+                : "Taiwan",
+            city: typeof persistedState.userProfile.city === "string" && persistedState.userProfile.city ? persistedState.userProfile.city : "Taipei",
+            style: typeof persistedState.userProfile.style === "string" ? persistedState.userProfile.style : undefined,
+            musicProvider: "lastfm" as const,
+            lastfmUsername:
+              typeof persistedState.userProfile.lastfmUsername === "string" ? persistedState.userProfile.lastfmUsername : undefined,
+            agreed: Boolean(persistedState.userProfile.agreed),
           }
         : null,
-      hatchSession: parsed.hatchSession ? normalizeHatchSession(parsed.hatchSession) : buildLegacySession(parsed),
-      currentBaseKey: normalizeBaseKey(parsed.currentBaseKey ?? getRandomBaseKey()),
-      weeklyPets: (Array.isArray(parsed.weeklyPets) ? parsed.weeklyPets : [])
-        .map(normalizePet)
-        .filter((pet): pet is Pet => Boolean(pet)),
-      mapEntries: safeMapEntries,
+      hatchSession: persistedState.hatchSession ? normalizeHatchSession(persistedState.hatchSession) : createNewHatchSession(),
+      currentBaseKey: normalizeBaseKey(persistedState.currentBaseKey ?? getRandomBaseKey()),
+      weeklyPets: Array.isArray(persistedState.weeklyPets) ? persistedState.weeklyPets.map(normalizePet).filter((pet): pet is Pet => Boolean(pet)) : [],
+      mapEntries: Array.isArray(persistedState.mapEntries)
+        ? persistedState.mapEntries
+            .map(normalizeMapEntry)
+            .filter((entry): entry is MapEntry => Boolean(entry))
+            .filter((entry) => !MOCK_MAP_ENTRIES.some((mockEntry) => mockEntry.id === entry.id))
+        : [],
     };
 
     return hydrateState(baseState);
   } catch (error) {
     console.error("Failed to load state", error);
+    clearPersistedAppStorage();
     return getDefaultState();
   }
 }
@@ -494,7 +562,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [state, setState] = useState<AppState>(loadStoredState);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    try {
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          version: STORAGE_VERSION,
+          state,
+        })
+      );
+    } catch (error) {
+      console.error("Failed to save state", error);
+    }
   }, [state]);
 
   const login = (profile: UserProfile) => {
