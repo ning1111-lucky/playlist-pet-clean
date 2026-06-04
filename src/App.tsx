@@ -37,10 +37,10 @@ const getInitialActiveTab = (): ActiveTab => {
 const BottomNavIcon = ({ type, active }: { type: string; active: boolean }) => {
   const iconSrc =
     type === "today"
-      ? "/assets/icons/home-icon.png"
+      ? "/assets/icons/nav-home-clean.png"
       : type === "items"
-        ? "/backpack-icon.png"
-        : "/assets/map/map-icon.png";
+        ? "/assets/icons/nav-bag-clean.png"
+        : "/assets/icons/nav-map-clean.png";
 
   return (
     <div className="modern-tab-icon">
