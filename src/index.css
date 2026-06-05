@@ -1916,10 +1916,10 @@ html, body, #root {
   padding: 0 0 108px;
   border-radius: 0;
   box-shadow: none;
-  background-color: #008fef;
+  background-color: #0b7cff;
   background-position: center top;
   background-repeat: no-repeat;
-  background-size: auto 100%;
+  background-size: 100% auto;
   text-align: center;
 }
 
