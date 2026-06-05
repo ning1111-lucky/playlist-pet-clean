@@ -90,6 +90,11 @@ html, body, #root {
     linear-gradient(180deg, #3a87ff 0%, #2f7bff 22%, #276ef5 100%);
 }
 
+.login-home-shell {
+  position: relative;
+  overflow: hidden;
+}
+
 .webapp-content {
   width: 100%;
   padding: 16px 16px 112px;
@@ -1527,8 +1532,11 @@ html, body, #root {
   left: 0;
   right: 0;
   bottom: 0;
+  width: 100%;
   height: 88px;
   padding: 0;
+  margin: 0;
+  transform: none;
   border-radius: 0;
   border-top: 4px solid #050505;
   background: #061b33;
@@ -1540,7 +1548,10 @@ html, body, #root {
 
 .login-home-shell .pixel-nav-tab {
   position: relative;
+  width: 100%;
+  min-width: 0;
   height: 88px;
+  box-sizing: border-box;
   border-right: 3px solid #050505;
   border-left: 0;
   border-radius: 0;
