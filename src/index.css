@@ -1523,6 +1523,10 @@ html, body, #root {
 }
 
 .login-home-shell .mobile-bottom-nav {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
   height: 88px;
   padding: 0;
   border-radius: 0;
@@ -1912,8 +1916,10 @@ html, body, #root {
   position: relative;
   overflow: hidden;
   width: 100%;
-  min-height: calc(100dvh - 104px);
-  padding: 0 0 108px;
+  height: 760px;
+  min-height: 760px;
+  max-height: 760px;
+  padding: 0;
   border-radius: 0;
   box-shadow: none;
   background-image: url("/assets/icons/bg-home-clean.png");
@@ -1927,9 +1933,16 @@ html, body, #root {
 .home-start-page {
   position: relative;
   width: 100%;
+  height: 760px;
   min-height: 760px;
+  max-height: 760px;
   overflow: hidden;
   background: transparent;
+}
+
+.login-home-shell .webapp-content {
+  padding: 0;
+  min-height: 760px;
 }
 
 .home-start-page [src*="asset-sheet"],
@@ -2431,8 +2444,10 @@ html, body, #root {
 
 @media (max-width: 480px) {
   .home-start-scene {
+    height: 760px;
     min-height: 760px;
-    padding-bottom: 104px;
+    max-height: 760px;
+    padding: 0;
   }
 
   .home-status-bar {
