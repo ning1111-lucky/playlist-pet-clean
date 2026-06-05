@@ -1916,10 +1916,11 @@ html, body, #root {
   padding: 0 0 108px;
   border-radius: 0;
   box-shadow: none;
+  background-image: url("/assets/icons/bg-home-clean.png");
   background-color: #0b7cff;
-  background-position: center top;
+  background-position: center center;
   background-repeat: no-repeat;
-  background-size: 100% auto;
+  background-size: 100% 100%;
   text-align: center;
 }
 
